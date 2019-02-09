@@ -10,6 +10,8 @@
 #include "LiveShaderPanel.h"
 //==============================================================================
 MainComponent::MainComponent()
+: live_shader_program{ std::make_unique<LiveShaderProgram>(*this, serialization.get_vertex_file(), serialization.get_fragment_file()) }
+
 {
     openGLContext.setComponentPaintingEnabled(true);
     
@@ -23,10 +25,17 @@ MainComponent::~MainComponent()
 {
     DBG("MainComponentDestructor");
 }
+void MainComponent::paint(Graphics& g)
+{
+    auto bounds = getLocalBounds();
+    g.setColour(Colours::white);
+    g.drawText("TEST", bounds.removeFromBottom(proportionOfHeight(0.05f)), Justification::topRight);
+}
 void MainComponent::resized()
 {
     auto bounds = getLocalBounds();
-    auto button_bounds = bounds.removeFromTop(proportionOfHeight(0.05f));
+    button_bounds = bounds.removeFromTop(proportionOfHeight(0.05f));
+//    auto button_bounds = getLocalBounds().removeFromTop(proportionOfHeight(0.05f));
     for (auto& b : buttons) {
         b->setBounds(button_bounds.removeFromLeft(proportionOfWidth(0.1f)));
     }
@@ -34,18 +43,30 @@ void MainComponent::resized()
 //
     visitChildren([&, i = 0](auto& child) mutable {
         auto c_bounds = bounds.removeFromTop(proportionOfHeight(0.25f));
-        DBG("rect: " << c_bounds.toString());
         child.setBounds(c_bounds);
         i = i % 2;
     });
 }
-void MainComponent::newOpenGLContextCreatedParent() { desktop_scale = openGLContext.getRenderingScale(); }
+void MainComponent::newOpenGLContextCreatedParent()
+{
+    live_shader_program->create();
+    rectangle.create();
+}
 void MainComponent::renderOpenGLParent()
 {
+    const auto x = button_bounds.getX() * getRenderingScale();
+    const auto y = (getHeight() - button_bounds.getBottom()) * getRenderingScale();
+    const auto w = button_bounds.getWidth() * getRenderingScale();
+    const auto h = button_bounds.getHeight() * getRenderingScale();
+    glViewport(x, y, w, h);
+    glScissor(x, y, w, h);
+    live_shader_program->render();
+
+    rectangle.render();
     sin_time = static_cast<float>(std::sin(Time::currentTimeMillis() / 1000.));
     print_log();
 }
-float MainComponent::get_desktop_scale() const { return desktop_scale; }
+float MainComponent::get_rendering_scale() const { return getRenderingScale(); }
 float MainComponent::get_sin_time() const { return sin_time; }
 
 // private: ====================================================================
@@ -71,7 +92,7 @@ void MainComponent::init_buttons()
     laf.setColour(TextButton::textColourOnId, Colours::limegreen);
     laf.setColour(TextButton::textColourOffId, Colours::white);
     
-    live_compile.triggerClick();
+//    live_compile.triggerClick();
 }
 void MainComponent::recompile_shaders()
 {

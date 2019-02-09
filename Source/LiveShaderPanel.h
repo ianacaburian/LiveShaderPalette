@@ -36,7 +36,7 @@ public:
 
     //==============================================================================
     void recompile_shader();
-    float get_desktop_scale() const;
+    float get_rendering_scale() const;
     float get_sin_time() const;
     int get_panel_ID() const;
 

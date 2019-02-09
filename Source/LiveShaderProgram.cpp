@@ -69,7 +69,7 @@ GLuint LiveShaderProgram::create_shader(const GLenum type, const GLchar* source,
 }
 void LiveShaderProgram::create_uniforms()
 {
-    GL::glUniform4f(get_uniform_location("uf_panel"), panel.getWidth(), panel.getHeight(), panel.get_desktop_scale(), panel.get_panel_ID());
+    GL::glUniform4f(get_uniform_location("uf_panel"), panel.getWidth(), panel.getHeight(), panel.get_rendering_scale(), panel.get_panel_ID());
     
     uf_sin_time = get_uniform_location("uf_sin_time");
 }

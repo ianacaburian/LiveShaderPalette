@@ -44,6 +44,6 @@ void LiveShaderPanel::recompile_shader()
 {
     live_shader_program.reset(new LiveShaderProgram{ *this, serialization.get_vertex_file(), serialization.get_fragment_file() });
 }
-float LiveShaderPanel::get_desktop_scale() const { return parent.get_desktop_scale(); }
+float LiveShaderPanel::get_rendering_scale() const { return parent.get_rendering_scale(); }
 float LiveShaderPanel::get_sin_time() const { return parent.get_sin_time(); }
 int LiveShaderPanel::get_panel_ID() const { return panel_ID; }

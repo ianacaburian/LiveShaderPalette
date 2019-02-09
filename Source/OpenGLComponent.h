@@ -17,6 +17,9 @@ public:
     explicit OpenGLChildComponent() = default;
     ~OpenGLChildComponent() = default;
     Rectangle<int> getBounds() const { return bounds; }
+    int getX() const { return bounds.getX(); }
+    int getY() const { return bounds.getY(); }
+    int getBottom() const { return bounds.getBottom(); }
     int getWidth() const { return bounds.getWidth(); }
     int getHeight() const { return bounds.getHeight(); }
     void setBounds(const Rectangle<int>& new_bounds) { bounds = new_bounds; }
@@ -57,12 +60,15 @@ protected:
     
     void addChildComponent(const std::shared_ptr<OpenGLChildComponent> new_child) { children.push_back(new_child); }
     void visitChildren(std::function<void(OpenGLChildComponent&)> f) { for (auto& child : children) f(*child); }
+    float getRenderingScale() const { return renderingScale; }
     
 private:
     std::vector<std::shared_ptr<OpenGLChildComponent>> children;
+    float renderingScale{};
     
     void newOpenGLContextCreated() override final
     {
+        renderingScale = openGLContext.getRenderingScale();
         newOpenGLContextCreatedParent();
         visitChildren([](auto& child) { child.newOpenGLContextCreated(); });
     }
@@ -73,15 +79,12 @@ private:
         renderOpenGLParent();
         
         visitChildren([this](auto& child) {
-            const auto bounds = child.getBounds();
-            const auto desktop_scale = static_cast<float>(openGLContext.getRenderingScale());
-            const auto x = bounds.getX() * desktop_scale;
-            const auto y = (getHeight() - bounds.getBottom()) * desktop_scale;
-            const auto width = bounds.getWidth() * desktop_scale;
-            const auto height = bounds.getHeight() * desktop_scale;
-            glViewport(x, y, width, height);
-            glScissor(x, y, width, height);
-            
+            const auto x = child.getX() * renderingScale;
+            const auto y = (getHeight() - child.getBottom()) * renderingScale;
+            const auto w = child.getWidth() * renderingScale;
+            const auto h = child.getHeight() * renderingScale;
+            glViewport(x, y, w, h);
+            glScissor(x, y, w, h);
             child.renderOpenGL();
         });
     }

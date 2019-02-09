@@ -9,6 +9,10 @@
 #pragma once
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "OpenGLComponent.h"
+#include "OpenGLRectangle.h"
+
+#include "Serialization.h"
+#include "LiveShaderProgram.h"
 class LiveShaderPanel;
 //==============================================================================
 /*
@@ -22,18 +26,22 @@ public:
     MainComponent();
     ~MainComponent();
     //==============================================================================
+    void paint(Graphics& g) override;
     void resized() override;
     void newOpenGLContextCreatedParent() override;
     void renderOpenGLParent() override;
     
     //==============================================================================
-    float get_desktop_scale() const;
+    float get_rendering_scale() const;
     float get_sin_time() const;
     
 private:
     //==============================================================================
     std::vector<std::shared_ptr<LiveShaderPanel>> panels;
-    
+    Serialization serialization;
+    OpenGLRectangle rectangle;
+    std::unique_ptr<LiveShaderProgram> live_shader_program;
+    Rectangle<int> button_bounds;
     TextButton
     live_compile    { "Live Compile" },
     print_sin_time    { "Print sin(time)" },
@@ -43,7 +51,7 @@ private:
     };
     Point<int> screen_resolution { 400, 300 };
     double prev_time{}, ms_frame{};
-    float desktop_scale{}, sin_time{};
+    float sin_time{};
     int frame_count{}, compile_interval_ms = 2000;
     
     //==============================================================================
