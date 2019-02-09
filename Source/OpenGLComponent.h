@@ -138,20 +138,20 @@ private:
             if (const auto childBounds = child->getBounds().toFloat();
                 childBounds.contains(mouseEvent.position)) {
                 
-                const auto relativeEvent = mouseEvent.withNewPosition(Point<float>{
+                const auto childEvent = mouseEvent.withNewPosition(Point<float>{
                     mouseEvent.position.x - childBounds.getX(),
                     mouseEvent.position.y - childBounds.getY()
                 });
                 std::visit(variantVisitor{
-                    [&](const MouseType::Move&)             { child->mouseMove(relativeEvent); },
-                    [&](const MouseType::Enter&)            { child->mouseEnter(relativeEvent); },
-                    [&](const MouseType::Exit&)             { child->mouseExit(relativeEvent); },
-                    [&](const MouseType::Down&)             { child->mouseDown(relativeEvent); },
-                    [&](const MouseType::Drag&)             { child->mouseDrag(relativeEvent); },
-                    [&](const MouseType::Up&)               { child->mouseUp(relativeEvent); },
-                    [&](const MouseType::DoubleClick&)      { child->mouseDoubleClick(relativeEvent); },
-                    [&](const MouseType::WheelMove& m)      { child->mouseWheelMove(relativeEvent, m.wheel); },
-                    [&](const MouseType::Magnify& m)        { child->mouseMagnify(relativeEvent, m.scaleFactor); }
+                    [&child, &childEvent](const MouseType::Move&)             { child->mouseMove(childEvent); },
+                    [&child, &childEvent](const MouseType::Enter&)            { child->mouseEnter(childEvent); },
+                    [&child, &childEvent](const MouseType::Exit&)             { child->mouseExit(childEvent); },
+                    [&child, &childEvent](const MouseType::Down&)             { child->mouseDown(childEvent); },
+                    [&child, &childEvent](const MouseType::Drag&)             { child->mouseDrag(childEvent); },
+                    [&child, &childEvent](const MouseType::Up&)               { child->mouseUp(childEvent); },
+                    [&child, &childEvent](const MouseType::DoubleClick&)      { child->mouseDoubleClick(childEvent); },
+                    [&child, &childEvent](const MouseType::WheelMove& m)      { child->mouseWheelMove(childEvent, m.wheel); },
+                    [&child, &childEvent](const MouseType::Magnify& m)        { child->mouseMagnify(childEvent, m.scaleFactor); }
                 }, mouseType);
                 
                 return;

@@ -61,20 +61,42 @@ public:
     float get_sin_time() const;
     
 private:
+    struct Arrangement
+    {
+        struct LayoutChooser : public Component
+        {
+            TextEditor 
+        };
+        enum class PanelLayout{ square = 0, rows, columns };
+        PanelLayout panel_layout;
+        int num_panels;
+    };
+    struct InfoDisplay
+    {
+        MainComponent& parent;
+        double prev_time, ms_frame;
+        int frame_count;
+
+        InfoDisplay(MainComponent& parent);
+        void log(std::function<void()> repaint);
+        void paint(Graphics& g);
+    };
     //==============================================================================
     std::vector<std::shared_ptr<LiveShaderPanel>> panels;
+    InfoDisplay info_display{ *this };
     Rectangle<int> toolbar_bounds;
-    TextButton live_compile    { "Live Compile" };
+    TextButton live_compile_btn{ "Live Compile" }, layout_btn{ "Layout" };
     Point<int> screen_resolution { 400, 300 };
-    double prev_time{}, ms_frame{};
     float sin_time{};
-    int frame_count{}, compile_interval_ms = 2000;
+    int compile_interval_ms = 2000;
     
     //==============================================================================
 
     void timerCallback() override;
     void init_buttons();
     void recompile_shaders();
-    void print_log();
+    void choose_layout();
+    
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
