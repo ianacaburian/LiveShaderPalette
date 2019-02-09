@@ -23,6 +23,7 @@
             file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/MainComponent.cpp"/>
       <FILE id="wRg5jV" name="MainComponent.h" compile="0" resource="0" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/MainComponent.h"/>
       <GROUP id="{FCB87DE1-98E8-63C6-20C9-40DB7B194AC7}" name="Shaders">
+        <FILE id="uVs2Np" name="Blank.frag" compile="0" resource="1" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/Shaders/Blank.frag"/>
         <FILE id="CPX2T7" name="Frag.frag" compile="0" resource="1" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/Shaders/Frag.frag"/>
         <FILE id="RKQ8GV" name="Vert.vert" compile="0" resource="1" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/Shaders/Vert.vert"/>
       </GROUP>

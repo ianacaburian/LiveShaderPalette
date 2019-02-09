@@ -14,9 +14,10 @@
 class Serialization
 {
 public:
-    Serialization();
+    Serialization(const char* vertex_filename, const char* fragment_filename);
     ~Serialization() = default;
     
+    void load_shader_file(const String& file_path);
     File get_vertex_file() const;
     File get_fragment_file() const;
 private:

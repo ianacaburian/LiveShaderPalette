@@ -40,6 +40,12 @@ void LiveShaderPanel::openGLContextClosing()
     live_shader_program->delete_program();
     rectangle.delete_vertex_objects();
 }
+// private: ====================================================================
+void LiveShaderPanel::load_shader_file(const String& file_path)
+{
+    serialization.load_shader_file(file_path);
+    recompile_shader();
+}
 void LiveShaderPanel::recompile_shader()
 {
     live_shader_program.reset(new LiveShaderProgram{ *this, serialization.get_vertex_file(), serialization.get_fragment_file() });

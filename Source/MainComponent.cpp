@@ -10,11 +10,7 @@
 #include "LiveShaderPanel.h"
 //==============================================================================
 MainComponent::MainComponent()
-: live_shader_program{ std::make_unique<LiveShaderProgram>(*this, serialization.get_vertex_file(), serialization.get_fragment_file()) }
-
 {
-    openGLContext.setComponentPaintingEnabled(true);
-    
     for (int i = 0; i != 4; ++i) {
         addChildComponent(panels.emplace_back(std::make_shared<LiveShaderPanel>(*this, i)));
     }
@@ -25,46 +21,53 @@ MainComponent::~MainComponent()
 {
     DBG("MainComponentDestructor");
 }
-void MainComponent::paint(Graphics& g)
-{
-    auto bounds = getLocalBounds();
-    g.setColour(Colours::white);
-    g.drawText("TEST", bounds.removeFromBottom(proportionOfHeight(0.05f)), Justification::topRight);
-}
 void MainComponent::resized()
 {
     auto bounds = getLocalBounds();
-    button_bounds = bounds.removeFromTop(proportionOfHeight(0.05f));
-//    auto button_bounds = getLocalBounds().removeFromTop(proportionOfHeight(0.05f));
-    for (auto& b : buttons) {
-        b->setBounds(button_bounds.removeFromLeft(proportionOfWidth(0.1f)));
-    }
-//    const auto top_row = bounds.removeFromTop(bounds.proportionOfHeight(0.5f));
-//
+    toolbar_bounds = bounds.removeFromTop(proportionOfHeight(0.05f));
+    live_compile.setBounds(toolbar_bounds.withWidth(proportionOfWidth(0.2f)));
+    const auto panel_area_height = bounds.proportionOfHeight(0.25f);
     visitChildren([&, i = 0](auto& child) mutable {
-        auto c_bounds = bounds.removeFromTop(proportionOfHeight(0.25f));
+        auto c_bounds = bounds.removeFromTop(panel_area_height);
         child.setBounds(c_bounds);
         i = i % 2;
     });
 }
-void MainComponent::newOpenGLContextCreatedParent()
+void MainComponent::paint(Graphics& g)
 {
-    live_shader_program->create();
-    rectangle.create();
+    g.setColour(Colours::black);
+    g.fillRect(toolbar_bounds);
+    g.setColour(Colours::white);
+    g.setFont(Font{ Font::getDefaultMonospacedFontName(),  14, 0 });
+    g.drawText(String::formatted("%.2f ms/frame | sin(time) = % 2.2f", ms_frame, sin_time),
+               toolbar_bounds, Justification::topRight);
 }
 void MainComponent::renderOpenGLParent()
 {
-    const auto x = button_bounds.getX() * getRenderingScale();
-    const auto y = (getHeight() - button_bounds.getBottom()) * getRenderingScale();
-    const auto w = button_bounds.getWidth() * getRenderingScale();
-    const auto h = button_bounds.getHeight() * getRenderingScale();
-    glViewport(x, y, w, h);
-    glScissor(x, y, w, h);
-    live_shader_program->render();
-
-    rectangle.render();
     sin_time = static_cast<float>(std::sin(Time::currentTimeMillis() / 1000.));
     print_log();
+}
+std::optional<Rectangle<int>> MainComponent::getParentClippedDrawArea() { return toolbar_bounds; }
+bool MainComponent::isInterestedInFileDrag(const StringArray& files) { return true; }
+void MainComponent::filesDropped(const StringArray& files, int x, int y)
+{
+    DBG("filesDropped() | x: " << x << ", y: " << y);
+    auto count = 0;
+    for (auto& f : files) {
+        DBG("#" << ++count << " " << f);
+    }
+    visitChildren([&](auto& child){
+        if (const auto child_bounds = child.getBounds();
+            child_bounds.contains(x, y)) {
+            
+            openGLContext.detach();
+            if (auto* shader_panel = dynamic_cast<LiveShaderPanel*>(&child)) {
+                shader_panel->load_shader_file(files[0]);
+            }
+            openGLContext.attachTo(*this);
+            return;
+        }
+    });
 }
 float MainComponent::get_rendering_scale() const { return getRenderingScale(); }
 float MainComponent::get_sin_time() const { return sin_time; }
@@ -82,15 +85,13 @@ void MainComponent::init_buttons()
             stopTimer();
         }
     };
-    for (auto* b : buttons) {
-        b->setClickingTogglesState(true);
-        addAndMakeVisible(b);
-    }
+    live_compile.setClickingTogglesState(true);
+    addAndMakeVisible(live_compile);
     auto&& laf = getLookAndFeel();
     laf.setColour(TextButton::buttonColourId, Colours::black);
     laf.setColour(TextButton::buttonOnColourId, Colours::black);
-    laf.setColour(TextButton::textColourOnId, Colours::limegreen);
-    laf.setColour(TextButton::textColourOffId, Colours::white);
+    laf.setColour(TextButton::textColourOnId, Colours::white);
+    laf.setColour(TextButton::textColourOffId, Colours::grey);
     
 //    live_compile.triggerClick();
 }
@@ -106,20 +107,12 @@ void MainComponent::recompile_shaders()
 }
 void MainComponent::print_log()
 {
-    if (print_ms_frame.getToggleState()
-        || print_sin_time.getToggleState()) {
-        frame_count++;
-        if (const auto current_time = Time::currentTimeMillis();
-            current_time - prev_time >= 1000.){
-            ms_frame = 1000. / frame_count;
-            if (print_ms_frame.getToggleState()) {
-                DBG(String::formatted("%f ms/frame", ms_frame));
-            }
-            if (print_sin_time.getToggleState()) {
-                DBG(String::formatted("sin(time) = %f", sin_time));
-            }
-            frame_count = 0;
-            prev_time = current_time;
-        }
+    ++frame_count;
+    if (const auto current_time = Time::currentTimeMillis();
+        current_time - prev_time >= 1000.){
+        ms_frame = 1000. / frame_count;
+        frame_count = 0;
+        prev_time = current_time;
+        MessageManager::callAsync([this] { repaint(); });
     }
 }

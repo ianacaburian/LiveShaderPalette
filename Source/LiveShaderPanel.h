@@ -35,6 +35,8 @@ public:
     void openGLContextClosing() override;
 
     //==============================================================================
+    
+    void load_shader_file(const String& file_path);
     void recompile_shader();
     float get_rendering_scale() const;
     float get_sin_time() const;
@@ -43,7 +45,7 @@ public:
 private:
     //==============================================================================
     MainComponent& parent;
-    Serialization serialization;
+    Serialization serialization{ "Vert.vert", "Frag.frag" };
     OpenGLRectangle rectangle;
     std::unique_ptr<LiveShaderProgram> live_shader_program;
     const int panel_ID;

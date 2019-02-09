@@ -16,13 +16,13 @@ OpenGLRectangle::OpenGLRectangle()
 void OpenGLRectangle::create()
 {
     constexpr auto positions_count = 8;
-    GLfloat positions[positions_count] = {
+    const GLfloat positions[positions_count] {
         -1.0f, -1.0f,
          1.0f, -1.0f,
          1.0f,  1.0f,
         -1.0f,  1.0f
     };
-    GLuint elements[elements_count] = {
+    const GLuint elements[elements_count] {
         0, 1, 2,
         0, 2, 3
     };
@@ -50,7 +50,6 @@ void OpenGLRectangle::render()
     // The element (or index) buffer is still required to be bound at each draw call to specify how to use the positions in the buffer to draw the correct shape.
     GL::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buff_ID);
     glDrawElements(GL_TRIANGLES, elements_count, GL_UNSIGNED_INT, nullptr);
-
 }
 void OpenGLRectangle::delete_vertex_objects()
 {

@@ -3,7 +3,7 @@
 
     OpenGLComponent.h
     Created: 8 Feb 2019 8:34:52am
-    Author:  Ian Caburian
+    Authors:  Ian Caburian & Marius Metzger
 
   ==============================================================================
 */
@@ -11,6 +11,7 @@
 #pragma once
 #include "../JuceLibraryCode/JuceHeader.h"
 #include <variant>
+#include <optional>
 class OpenGLChildComponent : public MouseListener, public OpenGLRenderer
 {
 public:
@@ -32,24 +33,30 @@ class OpenGLParentComponent : public Component, public OpenGLRenderer
 public:
     explicit OpenGLParentComponent()
     {
+        setPaintingIsUnclipped(true);
+        setOpaque(true);
+
         openGLContext.setOpenGLVersionRequired(juce::OpenGLContext::openGL3_2);
-        openGLContext.setRenderer(this);
         openGLContext.setContinuousRepainting(true);
-        openGLContext.attachTo(*this);
+        openGLContext.setComponentPaintingEnabled(true);
+        openGLContext.setMultisamplingEnabled(true);                            // Eliminates flickering, no idea how or why.
+        openGLContext.setRenderer(this);
+        openGLContext.attachTo(*this);        
     }
     ~OpenGLParentComponent()
     {
         openGLContext.detach();
+        openGLContext.setRenderer(nullptr);
     }
-    void mouseMove(const MouseEvent& m) override final { MouseCall{ *this, m, MouseCall::MouseMove{} }; }
-    void mouseEnter(const MouseEvent& m) override final { MouseCall{ *this, m, MouseCall::MouseEnter{} }; }
-    void mouseExit(const MouseEvent& m) override final { MouseCall{ *this, m, MouseCall::MouseExit{} }; }
-    void mouseDown(const MouseEvent& m) override final { MouseCall{ *this, m, MouseCall::MouseDown{} }; }
-    void mouseDrag(const MouseEvent& m) override final { MouseCall{ *this, m, MouseCall::MouseDrag{} }; }
-    void mouseUp(const MouseEvent& m) override final { MouseCall{ *this, m, MouseCall::MouseUp{} }; }
-    void mouseDoubleClick(const MouseEvent& m) override final { MouseCall{ *this, m, MouseCall::MouseDoubleClick{} }; }
-    void mouseWheelMove(const MouseEvent& m, const MouseWheelDetails& w) override final { MouseCall{ *this, m, MouseCall::MouseWheelMove{ w }}; }
-    void mouseMagnify(const MouseEvent& m, float s) override final { MouseCall{ *this, m, MouseCall::MouseMagnify{ s } }; }
+    void mouseMove(const MouseEvent& m) override final { mouseCall(m, MouseType::Move{}); }
+    void mouseEnter(const MouseEvent& m) override final { mouseCall(m, MouseType::Enter{}); }
+    void mouseExit(const MouseEvent& m) override final { mouseCall(m, MouseType::Exit{}); }
+    void mouseDown(const MouseEvent& m) override final { mouseCall(m, MouseType::Down{}); }
+    void mouseDrag(const MouseEvent& m) override final { mouseCall(m, MouseType::Drag{}); }
+    void mouseUp(const MouseEvent& m) override final { mouseCall(m, MouseType::Up{}); }
+    void mouseDoubleClick(const MouseEvent& m) override final { mouseCall(m, MouseType::DoubleClick{}); }
+    void mouseWheelMove(const MouseEvent& m, const MouseWheelDetails& w) override final { mouseCall(m, MouseType::WheelMove{ w }); }
+    void mouseMagnify(const MouseEvent& m, float s) override final { mouseCall(m, MouseType::Magnify{ s }); }
 
 protected:
     OpenGLContext openGLContext;
@@ -57,6 +64,7 @@ protected:
     virtual void newOpenGLContextCreatedParent() {}
     virtual void renderOpenGLParent() {}
     virtual void openGLContextClosingParent() {}
+    virtual std::optional<Rectangle<int>> getParentClippedDrawArea() = 0;
     
     void addChildComponent(const std::shared_ptr<OpenGLChildComponent> new_child) { children.push_back(new_child); }
     void visitChildren(std::function<void(OpenGLChildComponent&)> f) { for (auto& child : children) f(*child); }
@@ -68,23 +76,20 @@ private:
     
     void newOpenGLContextCreated() override final
     {
-        renderingScale = openGLContext.getRenderingScale();
         newOpenGLContextCreatedParent();
         visitChildren([](auto& child) { child.newOpenGLContextCreated(); });
     }
     void renderOpenGL() override final
     {
+        renderingScale = openGLContext.getRenderingScale();
+
         glEnable(GL_SCISSOR_TEST); // This needs to be called here, and has no effect in the initialization function for some reason
         
+        clipDrawArea(getParentClippedDrawArea());
         renderOpenGLParent();
         
         visitChildren([this](auto& child) {
-            const auto x = child.getX() * renderingScale;
-            const auto y = (getHeight() - child.getBottom()) * renderingScale;
-            const auto w = child.getWidth() * renderingScale;
-            const auto h = child.getHeight() * renderingScale;
-            glViewport(x, y, w, h);
-            glScissor(x, y, w, h);
+            clipDrawArea(child.getBounds());
             child.renderOpenGL();
         });
     }
@@ -93,48 +98,66 @@ private:
         visitChildren([](auto& child) { child.openGLContextClosing(); });
         openGLContextClosingParent();
     }
-    //==========================================================================
-    class MouseCall
+    void clipDrawArea(const std::optional<Rectangle<int>>& area)
     {
-    public:
-        struct MouseMove{};
-        struct MouseEnter{};
-        struct MouseExit{};
-        struct MouseDown{};
-        struct MouseDrag{};
-        struct MouseUp{};
-        struct MouseDoubleClick{};
-        struct MouseWheelMove{ const MouseWheelDetails& wheel; };
-        struct MouseMagnify{ float scaleFactor; };
-        
-        MouseCall(OpenGLParentComponent& parent, const MouseEvent& mouseEvent,
-                  const std::variant<MouseMove, MouseEnter, MouseExit, MouseDown, MouseDrag,
-                  MouseUp, MouseDoubleClick, MouseWheelMove, MouseMagnify> type)
-        {
-            parent.visitChildren([&](auto& child) {
-                if (const auto bounds = child.getBounds().toFloat();
-                    bounds.contains(mouseEvent.position)) {
-                    
-                    const auto relativeEvent = mouseEvent.withNewPosition(Point<float>{
-                        mouseEvent.position.x - bounds.getX(),
-                        mouseEvent.position.y - bounds.getY()
-                    });
-                    std::visit(variantVisitor{
-                        [&](const MouseMove&)            { child.mouseMove(relativeEvent); },
-                        [&](const MouseEnter&)           { child.mouseEnter(relativeEvent); },
-                        [&](const MouseExit&)            { child.mouseExit(relativeEvent); },
-                        [&](const MouseDown&)            { child.mouseDown(relativeEvent); },
-                        [&](const MouseDrag&)            { child.mouseDrag(relativeEvent); },
-                        [&](const MouseUp&)              { child.mouseUp(relativeEvent); },
-                        [&](const MouseDoubleClick&)     { child.mouseDoubleClick(relativeEvent); },
-                        [&](const MouseWheelMove& mwm)   { child.mouseWheelMove(relativeEvent, mwm.wheel); },
-                        [&](const MouseMagnify& mm)      { child.mouseMagnify(relativeEvent, mm.scaleFactor); }
-                    }, type);
-                }
-            });
+        if (area) {
+            const auto x = area.value().getX() * renderingScale;
+            const auto y = (getHeight() - area.value().getBottom()) * renderingScale;
+            const auto w = area.value().getWidth() * renderingScale;
+            const auto h = area.value().getHeight() * renderingScale;
+            glViewport(x, y, w, h);
+            glScissor(x, y, w, h);
         }
-    private:
-        template<class... Ts> struct variantVisitor : Ts... { using Ts::operator()...; };   // overloaded call operator
-        template<class... Ts> variantVisitor(Ts...) -> variantVisitor<Ts...>;               // variant deduction guide
+    }
+    // Mouse Forwarding ========================================================
+    struct MouseType
+    {
+        struct Move{};
+        struct Enter{};
+        struct Exit{};
+        struct Down{};
+        struct Drag{};
+        struct Up{};
+        struct DoubleClick{};
+        struct WheelMove{ const MouseWheelDetails& wheel; };
+        struct Magnify{ float scaleFactor; };
     };
-};
+    void mouseCall(const MouseEvent& mouseEvent,
+                   const std::variant<MouseType::Move,
+                                      MouseType::Enter,
+                                      MouseType::Exit,
+                                      MouseType::Down,
+                                      MouseType::Drag,
+                                      MouseType::Up,
+                                      MouseType::DoubleClick,
+                                      MouseType::WheelMove,
+                                      MouseType::Magnify>
+                                      mouseType)
+    {
+        for (auto& child : children) {
+            if (const auto childBounds = child->getBounds().toFloat();
+                childBounds.contains(mouseEvent.position)) {
+                
+                const auto relativeEvent = mouseEvent.withNewPosition(Point<float>{
+                    mouseEvent.position.x - childBounds.getX(),
+                    mouseEvent.position.y - childBounds.getY()
+                });
+                std::visit(variantVisitor{
+                    [&](const MouseType::Move&)             { child->mouseMove(relativeEvent); },
+                    [&](const MouseType::Enter&)            { child->mouseEnter(relativeEvent); },
+                    [&](const MouseType::Exit&)             { child->mouseExit(relativeEvent); },
+                    [&](const MouseType::Down&)             { child->mouseDown(relativeEvent); },
+                    [&](const MouseType::Drag&)             { child->mouseDrag(relativeEvent); },
+                    [&](const MouseType::Up&)               { child->mouseUp(relativeEvent); },
+                    [&](const MouseType::DoubleClick&)      { child->mouseDoubleClick(relativeEvent); },
+                    [&](const MouseType::WheelMove& m)      { child->mouseWheelMove(relativeEvent, m.wheel); },
+                    [&](const MouseType::Magnify& m)        { child->mouseMagnify(relativeEvent, m.scaleFactor); }
+                }, mouseType);
+                
+                return;
+            }
+        }
+    }
+    template<class... Ts> struct variantVisitor : Ts... { using Ts::operator()...; };   // overloaded call operator
+    template<class... Ts> variantVisitor(Ts...) -> variantVisitor<Ts...>;               // arg deduction guide
+}; // end OpenGLParentComponent
