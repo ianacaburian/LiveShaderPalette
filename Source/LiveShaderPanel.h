@@ -12,6 +12,7 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "OpenGLComponent.h"
 #include "Serialization.h"
+#include "OpenGLRectangle.h"
 class MainComponent;
 class LiveShaderProgram;
 //==============================================================================
@@ -19,7 +20,7 @@ class LiveShaderProgram;
  This component lives inside our window, and this is where you should put all
  your controls and content.
  */
-using GL = juce::OpenGLExtensionFunctions;
+
 class LiveShaderPanel   : public OpenGLChildComponent
 {
 public:
@@ -37,31 +38,15 @@ public:
     void recompile_shader();
     float get_desktop_scale() const;
     float get_sin_time() const;
-    int get_ID() const;
+    int get_panel_ID() const;
 
 private:
     //==============================================================================
-    static constexpr int positions_count = 8;
-    GLfloat positions[positions_count] = {
-        -1.0f, -1.0f,
-        1.0f, -1.0f,
-        1.0f,  1.0f,
-        -1.0f,  1.0f
-    };
-    static constexpr int elements_count = 6;
-    GLuint elements[elements_count] = {
-        0, 1, 2,
-        0, 2, 3
-    };
     MainComponent& parent;
     Serialization serialization;
+    OpenGLRectangle rectangle;
     std::unique_ptr<LiveShaderProgram> live_shader_program;
-    GLuint vertex_arr_ID{}, vertex_buff_ID{}, index_buff_ID{};
-    
-    // "Position" vertex attribute parameters
-    static constexpr int pos_attrib_id = 0;
-    static constexpr int num_floats_per_pos_attrib = 2;
-    const int component_ID;
+    const int panel_ID;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LiveShaderPanel)
 };

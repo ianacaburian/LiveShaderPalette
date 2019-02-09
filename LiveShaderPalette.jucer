@@ -4,6 +4,12 @@
               cppLanguageStandard="17" defines="GL_SILENCE_DEPRECATION=1">
   <MAINGROUP id="Lpz2TT" name="LiveShaderPalette">
     <GROUP id="{39443426-EA8F-5615-5DF5-4B1B7C4B267B}" name="Source">
+      <FILE id="DIq1G4" name="LiveShaderProgram.cpp" compile="1" resource="0"
+            file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/LiveShaderProgram.cpp"/>
+      <FILE id="IIWvk4" name="OpenGLRectangle.cpp" compile="1" resource="0"
+            file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/OpenGLRectangle.cpp"/>
+      <FILE id="thSAIE" name="OpenGLRectangle.h" compile="0" resource="0"
+            file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/OpenGLRectangle.h"/>
       <FILE id="VpoADj" name="Serialization.cpp" compile="1" resource="0"
             file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/Serialization.cpp"/>
       <FILE id="RFxJ3P" name="Serialization.h" compile="0" resource="0" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/Serialization.h"/>
@@ -26,7 +32,7 @@
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX">
+    <XCODE_MAC targetFolder="Builds/MacOSX" extraCompilerFlags="-Wno-deprecated-declarations">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug" osxCompatibility="10.14 SDK"/>
         <CONFIGURATION isDebug="0" name="Release" osxCompatibility="10.14 SDK"/>

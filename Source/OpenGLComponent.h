@@ -38,15 +38,15 @@ public:
     {
         openGLContext.detach();
     }
-    void mouseMove(const MouseEvent& m) final { MouseCall{ *this, m, MouseCall::MouseMove{} }; }
-    void mouseEnter(const MouseEvent& m) final { MouseCall{ *this, m, MouseCall::MouseEnter{} }; }
-    void mouseExit(const MouseEvent& m) final { MouseCall{ *this, m, MouseCall::MouseExit{} }; }
-    void mouseDown(const MouseEvent& m) final { MouseCall{ *this, m, MouseCall::MouseDown{} }; }
-    void mouseDrag(const MouseEvent& m) final { MouseCall{ *this, m, MouseCall::MouseDrag{} }; }
-    void mouseUp(const MouseEvent& m) final { MouseCall{ *this, m, MouseCall::MouseUp{} }; }
-    void mouseDoubleClick(const MouseEvent& m) final { MouseCall{ *this, m, MouseCall::MouseDoubleClick{} }; }
-    void mouseWheelMove(const MouseEvent& m, const MouseWheelDetails& w) final { MouseCall{ *this, m, MouseCall::MouseWheelMove{ w }}; }
-    void mouseMagnify(const MouseEvent& m, float s) final { MouseCall{ *this, m, MouseCall::MouseMagnify{ s } }; }
+    void mouseMove(const MouseEvent& m) override final { MouseCall{ *this, m, MouseCall::MouseMove{} }; }
+    void mouseEnter(const MouseEvent& m) override final { MouseCall{ *this, m, MouseCall::MouseEnter{} }; }
+    void mouseExit(const MouseEvent& m) override final { MouseCall{ *this, m, MouseCall::MouseExit{} }; }
+    void mouseDown(const MouseEvent& m) override final { MouseCall{ *this, m, MouseCall::MouseDown{} }; }
+    void mouseDrag(const MouseEvent& m) override final { MouseCall{ *this, m, MouseCall::MouseDrag{} }; }
+    void mouseUp(const MouseEvent& m) override final { MouseCall{ *this, m, MouseCall::MouseUp{} }; }
+    void mouseDoubleClick(const MouseEvent& m) override final { MouseCall{ *this, m, MouseCall::MouseDoubleClick{} }; }
+    void mouseWheelMove(const MouseEvent& m, const MouseWheelDetails& w) override final { MouseCall{ *this, m, MouseCall::MouseWheelMove{ w }}; }
+    void mouseMagnify(const MouseEvent& m, float s) override final { MouseCall{ *this, m, MouseCall::MouseMagnify{ s } }; }
 
 protected:
     OpenGLContext openGLContext;
@@ -59,6 +59,38 @@ protected:
     void visitChildren(std::function<void(OpenGLChildComponent&)> f) { for (auto& child : children) f(*child); }
     
 private:
+    std::vector<std::shared_ptr<OpenGLChildComponent>> children;
+    
+    void newOpenGLContextCreated() override final
+    {
+        newOpenGLContextCreatedParent();
+        visitChildren([](auto& child) { child.newOpenGLContextCreated(); });
+    }
+    void renderOpenGL() override final
+    {
+        glEnable(GL_SCISSOR_TEST); // This needs to be called here, and has no effect in the initialization function for some reason
+        
+        renderOpenGLParent();
+        
+        visitChildren([this](auto& child) {
+            const auto bounds = child.getBounds();
+            const auto desktop_scale = static_cast<float>(openGLContext.getRenderingScale());
+            const auto x = bounds.getX() * desktop_scale;
+            const auto y = (getHeight() - bounds.getBottom()) * desktop_scale;
+            const auto width = bounds.getWidth() * desktop_scale;
+            const auto height = bounds.getHeight() * desktop_scale;
+            glViewport(x, y, width, height);
+            glScissor(x, y, width, height);
+            
+            child.renderOpenGL();
+        });
+    }
+    void openGLContextClosing() override final
+    {
+        visitChildren([](auto& child) { child.openGLContextClosing(); });
+        openGLContextClosingParent();
+    }
+    //==========================================================================
     class MouseCall
     {
     public:
@@ -74,7 +106,7 @@ private:
         
         MouseCall(OpenGLParentComponent& parent, const MouseEvent& mouseEvent,
                   const std::variant<MouseMove, MouseEnter, MouseExit, MouseDown, MouseDrag,
-                                     MouseUp, MouseDoubleClick, MouseWheelMove, MouseMagnify> type)
+                  MouseUp, MouseDoubleClick, MouseWheelMove, MouseMagnify> type)
         {
             parent.visitChildren([&](auto& child) {
                 if (const auto bounds = child.getBounds().toFloat();
@@ -102,35 +134,4 @@ private:
         template<class... Ts> struct variantVisitor : Ts... { using Ts::operator()...; };   // overloaded call operator
         template<class... Ts> variantVisitor(Ts...) -> variantVisitor<Ts...>;               // variant deduction guide
     };
-    std::vector<std::shared_ptr<OpenGLChildComponent>> children;
-    
-    void newOpenGLContextCreated() final
-    {
-        newOpenGLContextCreatedParent();
-        visitChildren([](auto& child) { child.newOpenGLContextCreated(); });
-    }
-    void renderOpenGL() final
-    {
-        glEnable(GL_SCISSOR_TEST); // This needs to be called here, and has no effect in the initialization function for some reason
-        
-        renderOpenGLParent();
-        
-        visitChildren([this](auto& child) {
-            const auto bounds = child.getBounds();
-            const auto desktop_scale = static_cast<float>(openGLContext.getRenderingScale());
-            const auto x = bounds.getX() * desktop_scale;
-            const auto y = (getHeight() - bounds.getBottom()) * desktop_scale;
-            const auto width = bounds.getWidth() * desktop_scale;
-            const auto height = bounds.getHeight() * desktop_scale;
-            glViewport(x, y, width, height);
-            glScissor(x, y, width, height);
-            
-            child.renderOpenGL();
-        });
-    }
-    void openGLContextClosing() final
-    {
-        visitChildren([](auto& child) { child.openGLContextClosing(); });
-        openGLContextClosingParent();
-    }
 };

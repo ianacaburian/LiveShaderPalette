@@ -11,6 +11,8 @@
 //==============================================================================
 MainComponent::MainComponent()
 {
+    openGLContext.setComponentPaintingEnabled(true);
+    
     for (int i = 0; i != 4; ++i) {
         addChildComponent(panels.emplace_back(std::make_shared<LiveShaderPanel>(*this, i)));
     }
@@ -24,10 +26,17 @@ MainComponent::~MainComponent()
 void MainComponent::resized()
 {
     auto bounds = getLocalBounds();
-    visitChildren([&](auto& child){
+    auto button_bounds = bounds.removeFromTop(proportionOfHeight(0.05f));
+    for (auto& b : buttons) {
+        b->setBounds(button_bounds.removeFromLeft(proportionOfWidth(0.1f)));
+    }
+//    const auto top_row = bounds.removeFromTop(bounds.proportionOfHeight(0.5f));
+//
+    visitChildren([&, i = 0](auto& child) mutable {
         auto c_bounds = bounds.removeFromTop(proportionOfHeight(0.25f));
         DBG("rect: " << c_bounds.toString());
         child.setBounds(c_bounds);
+        i = i % 2;
     });
 }
 void MainComponent::newOpenGLContextCreatedParent() { desktop_scale = openGLContext.getRenderingScale(); }
