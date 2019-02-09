@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="ypxSOZ" name="LiveShaderPalette" projectType="guiapp" jucerVersion="5.4.2"
+              cppLanguageStandard="17" defines="GL_SILENCE_DEPRECATION=1">
+  <MAINGROUP id="Lpz2TT" name="LiveShaderPalette">
+    <GROUP id="{39443426-EA8F-5615-5DF5-4B1B7C4B267B}" name="Source">
+      <FILE id="VpoADj" name="Serialization.cpp" compile="1" resource="0"
+            file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/Serialization.cpp"/>
+      <FILE id="RFxJ3P" name="Serialization.h" compile="0" resource="0" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/Serialization.h"/>
+      <FILE id="ZDnLCt" name="LiveShaderPanel.cpp" compile="1" resource="0"
+            file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/LiveShaderPanel.cpp"/>
+      <FILE id="BCxAuK" name="LiveShaderPanel.h" compile="0" resource="0"
+            file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/LiveShaderPanel.h"/>
+      <FILE id="kjFTXX" name="LiveShaderProgram.h" compile="0" resource="0"
+            file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/LiveShaderProgram.h"/>
+      <FILE id="aQXdxd" name="MainComponent.cpp" compile="1" resource="0"
+            file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/MainComponent.cpp"/>
+      <FILE id="wRg5jV" name="MainComponent.h" compile="0" resource="0" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/MainComponent.h"/>
+      <GROUP id="{FCB87DE1-98E8-63C6-20C9-40DB7B194AC7}" name="Shaders">
+        <FILE id="CPX2T7" name="Frag.frag" compile="0" resource="1" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/Shaders/Frag.frag"/>
+        <FILE id="RKQ8GV" name="Vert.vert" compile="0" resource="1" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/Shaders/Vert.vert"/>
+      </GROUP>
+      <FILE id="WLkhaF" name="Main.cpp" compile="1" resource="0" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/Main.cpp"/>
+      <FILE id="waYvZY" name="OpenGLComponent.h" compile="0" resource="0"
+            file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/OpenGLComponent.h"/>
+    </GROUP>
+  </MAINGROUP>
+  <EXPORTFORMATS>
+    <XCODE_MAC targetFolder="Builds/MacOSX">
+      <CONFIGURATIONS>
+        <CONFIGURATION isDebug="1" name="Debug" osxCompatibility="10.14 SDK"/>
+        <CONFIGURATION isDebug="0" name="Release" osxCompatibility="10.14 SDK"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_audio_basics" path="../../../../../../../Users/cc/Dev/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../../../../../../Users/cc/Dev/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../../../../../../Users/cc/Dev/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../../../../../../Users/cc/Dev/JUCE/modules"/>
+        <MODULEPATH id="juce_core" path="../../../../../../../Users/cc/Dev/JUCE/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../../../../../../Users/cc/Dev/JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../../../../../../Users/cc/Dev/JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../../../../../../../Users/cc/Dev/JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../../../../../../Users/cc/Dev/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../../../../../../Users/cc/Dev/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../../../../../../Users/cc/Dev/JUCE/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../../../../../../Users/cc/Dev/JUCE/modules"/>
+      </MODULEPATHS>
+    </XCODE_MAC>
+  </EXPORTFORMATS>
+  <MODULES>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_cryptography" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+  </MODULES>
+  <LIVE_SETTINGS>
+    <OSX/>
+  </LIVE_SETTINGS>
+  <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1"/>
+</JUCERPROJECT>
