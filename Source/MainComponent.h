@@ -8,6 +8,7 @@
 
 #pragma once
 #include "../JuceLibraryCode/JuceHeader.h"
+#include <variant>
 #include "OpenGLComponent.h"
 class LiveShaderPanel;
 //==============================================================================
@@ -19,63 +20,35 @@ class MainComponent   : public OpenGLParentComponent, public FileDragAndDropTarg
 {
 public:
     //==============================================================================
-    MainComponent();
-    ~MainComponent();
+    explicit MainComponent();
+    ~MainComponent() = default;
     //==============================================================================
     void resized() override;
     void paint(Graphics& g) override;
     void renderOpenGLParent() override;
     std::optional<Rectangle<int>> getParentClippedDrawArea() override;
-
-    //==============================================================================
-
-    /** Callback to check whether this target is interested in the set of files being offered.
-     
-     Note that this will be called repeatedly when the user is dragging the mouse around over your
-     component, so don't do anything time-consuming in here, like opening the files to have a look
-     inside them!
-     
-     @param files        the set of (absolute) pathnames of the files that the user is dragging
-     @returns            true if this component wants to receive the other callbacks regarging this
-     type of object; if it returns false, no other callbacks will be made.
-     */
     bool isInterestedInFileDrag (const StringArray& files) override;
-    
-    /** Callback to indicate that the user has dropped the files onto this component.
-     
-     When the user drops the files, this get called, and you can use the files in whatever
-     way is appropriate.
-     
-     Note that after this is called, the fileDragExit method may not be called, so you should
-     clean up in here if there's anything you need to do when the drag finishes.
-     
-     @param files        the set of (absolute) pathnames of the files that the user is dragging
-     @param x            the mouse x position, relative to this component
-     @param y            the mouse y position, relative to this component
-     */
     void filesDropped (const StringArray& files, int x, int y) override;
-    
-    //==============================================================================
-
     float get_rendering_scale() const;
     float get_sin_time() const;
     
 private:
-    struct Arrangement
+    struct PanelArrangement
     {
-        struct LayoutChooser : public Component
+        struct Square
         {
-            TextEditor 
+            Square(const int num_panels);
+            int num_panels;
         };
-        enum class PanelLayout{ square = 0, rows, columns };
-        PanelLayout panel_layout;
-        int num_panels;
+        struct Rows{ int num_panels; };
+        struct Columns{ int num_panels; };
+        std::variant<Square, Rows, Columns> layout;
     };
     struct InfoDisplay
     {
         MainComponent& parent;
-        double prev_time, ms_frame;
-        int frame_count;
+        double prev_time{}, ms_frame{};
+        int frame_count{};
 
         InfoDisplay(MainComponent& parent);
         void log(std::function<void()> repaint);
@@ -83,9 +56,16 @@ private:
     };
     //==============================================================================
     std::vector<std::shared_ptr<LiveShaderPanel>> panels;
+    PanelArrangement panel_arranger{ PanelArrangement::Rows{ 2 } };
     InfoDisplay info_display{ *this };
     Rectangle<int> toolbar_bounds;
-    TextButton live_compile_btn{ "Live Compile" }, layout_btn{ "Layout" };
+    
+    TextEditor num_panels_txt;
+    
+    TextButton
+    live_compile_btn{ "Live Compile" },
+    square_btn{ "Square" }, rows_btn{ "Rows" }, columns_btn{ "Columns" };
+    
     Point<int> screen_resolution { 400, 300 };
     float sin_time{};
     int compile_interval_ms = 2000;
@@ -93,10 +73,8 @@ private:
     //==============================================================================
 
     void timerCallback() override;
-    void init_buttons();
+    void init_buttons(LookAndFeel& look);
     void recompile_shaders();
-    void choose_layout();
     
-
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

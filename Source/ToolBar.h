@@ -1,11 +1,11 @@
 /*
   ==============================================================================
 
-    PanelArranger.cpp
-    Created: 10 Feb 2019 10:15:02am
+    ToolBar.h
+    Created: 10 Feb 2019 6:45:24pm
     Author:  Ian Caburian
 
   ==============================================================================
 */
 
-#include "PanelArranger.h"
+#pragma once
