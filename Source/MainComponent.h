@@ -8,73 +8,50 @@
 
 #pragma once
 #include "../JuceLibraryCode/JuceHeader.h"
-#include <variant>
 #include "OpenGLComponent.h"
-class LiveShaderPanel;
+#include "ToolBar.h"
+
 //==============================================================================
 /*
     This component lives inside our window, and this is where you should put all
     your controls and content.
 */
-class MainComponent   : public OpenGLParentComponent, public FileDragAndDropTarget, private Timer
+class MainComponent   : public OpenGLParentComponent, public FileDragAndDropTarget, public Timer
 {
 public:
     //==============================================================================
     explicit MainComponent();
-    ~MainComponent() = default;
-    //==============================================================================
+    ~MainComponent();
     void resized() override;
-    void paint(Graphics& g) override;
     void renderOpenGLParent() override;
     std::optional<Rectangle<int>> getParentClippedDrawArea() override;
     bool isInterestedInFileDrag (const StringArray& files) override;
     void filesDropped (const StringArray& files, int x, int y) override;
+    void timerCallback() override;
+
+    //==============================================================================
+
+    void update_layout();
     float get_rendering_scale() const;
     float get_sin_time() const;
     
 private:
-    struct PanelArrangement
-    {
-        struct Square
-        {
-            Square(const int num_panels);
-            int num_panels;
-        };
-        struct Rows{ int num_panels; };
-        struct Columns{ int num_panels; };
-        std::variant<Square, Rows, Columns> layout;
-    };
-    struct InfoDisplay
-    {
-        MainComponent& parent;
-        double prev_time{}, ms_frame{};
-        int frame_count{};
-
-        InfoDisplay(MainComponent& parent);
-        void log(std::function<void()> repaint);
-        void paint(Graphics& g);
-    };
     //==============================================================================
-    std::vector<std::shared_ptr<LiveShaderPanel>> panels;
-    PanelArrangement panel_arranger{ PanelArrangement::Rows{ 2 } };
-    InfoDisplay info_display{ *this };
-    Rectangle<int> toolbar_bounds;
     
-    TextEditor num_panels_txt;
+    struct Look : public LookAndFeel_V4 { explicit Look(); };
     
-    TextButton
-    live_compile_btn{ "Live Compile" },
-    square_btn{ "Square" }, rows_btn{ "Rows" }, columns_btn{ "Columns" };
+    //==============================================================================
     
+    ToolBar tool_bar{ *this };
+    Look look;
     Point<int> screen_resolution { 400, 300 };
     float sin_time{};
-    int compile_interval_ms = 2000;
     
     //==============================================================================
 
-    void timerCallback() override;
-    void init_buttons(LookAndFeel& look);
+    void add_panels(const int initial_num_panels, const int num_panels_to_add);
     void recompile_shaders();
+    void resize_panels(Rectangle<float>& bounds);
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

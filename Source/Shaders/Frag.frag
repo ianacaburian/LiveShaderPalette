@@ -27,22 +27,22 @@ void main()
 //    float intensity = thickness/abs(radius - length(p));
 //
 //    out_color = vec4(intensity, 0., intensity, .5);
-//    vec2 p = (gl_PointCoord.xy) / (uf_sin_time / (uf_panel.y * 2));
-//    float thickness = 0.02;
-//    float radius = 0.5;
-//    float intensity = thickness/abs(radius - length(p));
-//
-//    out_color = vec4(0., intensity, intensity, .5);
+    vec2 p = (gl_PointCoord.xy) / (uf_sin_time);
+    float thickness = 0.02;
+    float radius = 0.5;
+    float intensity = thickness/abs(radius - length(p));
+
+    out_color = vec4(0., intensity, intensity, .5);
     
-        float result = 0.;
-    //    if (sin_time <= gl_PointCoord.x && gl_PointCoord.x < sin_time + 0.1) {
-        vec2 res = uf_panel.xy * uf_panel.z;
-    //    if (res.x * 0.25 <= gl_FragCoord.x && gl_FragCoord.x < res.x * 0.25 + res.x * 0.5
-    //        && res.y * 0.25 <= gl_FragCoord.y && gl_FragCoord.y < res.y * 0.25 + res.y * 0.5) {
-        if (uf_sin_time<= gl_PointCoord.y && gl_PointCoord.y < (uf_sin_time + .1)) {
-            result = 1.;
-        }
-        out_color = vec4(0., result, 0., 1.);
+//        float result = 0.;
+//    //    if (sin_time <= gl_PointCoord.x && gl_PointCoord.x < sin_time + 0.1) {
+//        vec2 res = uf_panel.xy * uf_panel.z;
+//    //    if (res.x * 0.25 <= gl_FragCoord.x && gl_FragCoord.x < res.x * 0.25 + res.x * 0.5
+//    //        && res.y * 0.25 <= gl_FragCoord.y && gl_FragCoord.y < res.y * 0.25 + res.y * 0.5) {
+//        if (uf_sin_time<= gl_PointCoord.y && gl_PointCoord.y < (uf_sin_time + .1)) {
+//            result = 1.;
+//        }
+//        out_color = vec4(0., result, 0., 1.);
 
 }
 

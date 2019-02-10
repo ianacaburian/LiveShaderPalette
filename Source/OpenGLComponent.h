@@ -12,6 +12,69 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include <variant>
 #include <optional>
+
+//==============================================================================
+
+template<class... Ts> struct VariantVisitor : Ts... { using Ts::operator()...; };   // overloaded call operator
+template<class... Ts> VariantVisitor(Ts...) -> VariantVisitor<Ts...>;               // arg deduction guide
+
+//==============================================================================
+
+class OpenGLRectangle final
+{
+    using GL = juce::OpenGLExtensionFunctions;
+public:
+    OpenGLRectangle() {}
+    ~OpenGLRectangle() = default;
+    void create()
+    {
+        constexpr auto positions_count = 8;
+        const GLfloat positions[positions_count] {
+            -1.0f, -1.0f,
+             1.0f, -1.0f,
+             1.0f,  1.0f,
+            -1.0f,  1.0f
+        };
+        const GLuint elements[elements_count] {
+            0, 1, 2,
+            0, 2, 3
+        };
+        GL::glGenVertexArrays(1, &vertex_arr_ID);
+        GL::glBindVertexArray(vertex_arr_ID);
+        
+        GL::glGenBuffers(1, &vertex_buff_ID);
+        GL::glBindBuffer(GL_ARRAY_BUFFER, vertex_buff_ID);
+        GL::glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * positions_count, positions, GL_STATIC_DRAW);
+        
+        const auto position_attrib_id = 0, dimensions = 2;
+        GL::glEnableVertexAttribArray(position_attrib_id);
+        GL::glVertexAttribPointer(position_attrib_id, dimensions, GL_FLOAT, GL_FALSE,
+                                  sizeof(GLfloat) * dimensions, (const void*)0);
+        
+        GL::glGenBuffers(1, &index_buff_ID);
+        GL::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buff_ID);
+        GL::glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * elements_count, elements, GL_STATIC_DRAW);
+    }
+    void render()
+    {
+        GL::glBindVertexArray(vertex_arr_ID);
+        GL::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buff_ID);
+        glDrawElements(GL_TRIANGLES, elements_count, GL_UNSIGNED_INT, nullptr);
+    }
+    void delete_vertex_objects()
+    {
+        GL::glDeleteVertexArrays(1, &vertex_arr_ID);
+        GL::glDeleteBuffers(1, &vertex_buff_ID);
+        GL::glDeleteBuffers(1, &index_buff_ID);
+    }
+private:
+    static constexpr int elements_count = 6;
+    GLuint vertex_arr_ID{}, vertex_buff_ID{}, index_buff_ID{};
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenGLRectangle)
+};
+
+//==============================================================================
+
 class OpenGLChildComponent : public MouseListener, public OpenGLRenderer
 {
 public:
@@ -19,22 +82,22 @@ public:
     ~OpenGLChildComponent() = default;
     Rectangle<int> getBounds() const { return bounds; }
     int getX() const { return bounds.getX(); }
-    int getY() const { return bounds.getY(); }
     int getBottom() const { return bounds.getBottom(); }
     int getWidth() const { return bounds.getWidth(); }
     int getHeight() const { return bounds.getHeight(); }
     void setBounds(const Rectangle<int>& new_bounds) { bounds = new_bounds; }
 private:
     Rectangle<int> bounds;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenGLChildComponent)
 };
+
+//==============================================================================
 
 class OpenGLParentComponent : public Component, public OpenGLRenderer
 {
 public:
     explicit OpenGLParentComponent()
     {
-        setPaintingIsUnclipped(true);
-        setOpaque(true);
 
         openGLContext.setOpenGLVersionRequired(juce::OpenGLContext::openGL3_2);
         openGLContext.setContinuousRepainting(true);
@@ -58,22 +121,35 @@ public:
     void mouseWheelMove(const MouseEvent& m, const MouseWheelDetails& w) override final { mouseCall(m, MouseType::WheelMove{ w }); }
     void mouseMagnify(const MouseEvent& m, float s) override final { mouseCall(m, MouseType::Magnify{ s }); }
 
+
 protected:
+    //==============================================================================
+
     OpenGLContext openGLContext;
     
+    //==============================================================================
+
     virtual void newOpenGLContextCreatedParent() {}
     virtual void renderOpenGLParent() {}
     virtual void openGLContextClosingParent() {}
     virtual std::optional<Rectangle<int>> getParentClippedDrawArea() = 0;
     
-    void addChildComponent(const std::shared_ptr<OpenGLChildComponent> new_child) { children.push_back(new_child); }
+    //==============================================================================
+
+    void addOpenGLChildComponent(const std::shared_ptr<OpenGLChildComponent> new_child) { children.push_back(new_child); }
+    OpenGLChildComponent* removeOpenGLChildComponent(int childIndexToRemove) { return children.erase(children.begin() + childIndexToRemove)->get(); }
     void visitChildren(std::function<void(OpenGLChildComponent&)> f) { for (auto& child : children) f(*child); }
+    std::size_t getNumOpenGLChildComponents() const { return children.size(); }
     float getRenderingScale() const { return renderingScale; }
     
 private:
+    //==============================================================================
+
     std::vector<std::shared_ptr<OpenGLChildComponent>> children;
     float renderingScale{};
     
+    //==============================================================================
+
     void newOpenGLContextCreated() override final
     {
         newOpenGLContextCreatedParent();
@@ -142,7 +218,7 @@ private:
                     mouseEvent.position.x - childBounds.getX(),
                     mouseEvent.position.y - childBounds.getY()
                 });
-                std::visit(variantVisitor{
+                std::visit(VariantVisitor{
                     [&child, &childEvent](const MouseType::Move&)             { child->mouseMove(childEvent); },
                     [&child, &childEvent](const MouseType::Enter&)            { child->mouseEnter(childEvent); },
                     [&child, &childEvent](const MouseType::Exit&)             { child->mouseExit(childEvent); },
@@ -158,6 +234,5 @@ private:
             }
         }
     }
-    template<class... Ts> struct variantVisitor : Ts... { using Ts::operator()...; };   // overloaded call operator
-    template<class... Ts> variantVisitor(Ts...) -> variantVisitor<Ts...>;               // arg deduction guide
-}; // end OpenGLParentComponent
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenGLParentComponent)
+};

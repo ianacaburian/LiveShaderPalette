@@ -8,91 +8,37 @@
 
 #include "MainComponent.h"
 #include "LiveShaderPanel.h"
+
 //==============================================================================
+
 MainComponent::MainComponent()
 {
-    for (int i = 0; i != 4; ++i) {
-        addChildComponent(panels.emplace_back(std::make_shared<LiveShaderPanel>(*this, i)));
-    }
-    auto& look = getLookAndFeel();
-    look.setColour(ResizableWindow::backgroundColourId, Colours::black);
-    init_buttons(look);
-    
-    for (auto* c : std::initializer_list<Button*>{
-        &square_btn, &rows_btn, &columns_btn
-    }) {
-        addAndMakeVisible(c);
-        c->setClickingTogglesState(true);
-    }
-    addAndMakeVisible(num_panels_txt);
-    square_btn.setRadioGroupId(1);
-    rows_btn.setRadioGroupId(1);
-    columns_btn.setRadioGroupId(1);
-    std::visit([this](auto&& arg) {
-        using T = std::decay_t<decltype(arg)>;
-        if constexpr (std::is_same_v<T, PanelArrangement::Square>)
-            square_btn.setToggleState(true, sendNotificationSync);
-        else if constexpr (std::is_same_v<T, PanelArrangement::Rows>)
-            rows_btn.setToggleState(true, sendNotificationSync);
-        else if constexpr (std::is_same_v<T, PanelArrangement::Columns>)
-            columns_btn.setToggleState(true, sendNotificationSync);
-    }, panel_arranger.layout);
-    
-    num_panels_txt.onReturnKey = [this] {
-        std::visit([this](auto&& arg) {
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr (std::is_same_v<T, PanelArrangement::Square>)
-                panel_arranger.layout = PanelArrangement::Square{ num_panels_txt.getText().getIntValue() };
-            else
-                arg.num_panels = num_panels_txt.getText().getIntValue();
-        }, panel_arranger.layout);
-    };
-    square_btn.onClick = [this] {
-        std::visit([this](auto&& v){ panel_arranger.layout = PanelArrangement::Square{ v.num_panels }; }, panel_arranger.layout);
-//        panel_arranger.layout = PanelArrangement::Square{ panel_arranger.layout.value().num_panels };
-    };
-    rows_btn.onClick = [this] {
-        std::visit([this](auto&& v){ panel_arranger.layout = PanelArrangement::Rows{ v.num_panels }; }, panel_arranger.layout);
+    add_panels(0, tool_bar.get_num_panels());
 
-    };
-    columns_btn.onClick = [this] {
-        std::visit([this](auto&& v){ panel_arranger.layout = PanelArrangement::Columns{ v.num_panels }; }, panel_arranger.layout);
-    };
+    setLookAndFeel(&look);
+    addAndMakeVisible(tool_bar);
     setSize(screen_resolution.x, screen_resolution.y);
 }
-MainComponent::PanelArrangement::Square::Square(const int num_panels) : num_panels{ (num_panels < 4 ? 1 : num_panels / 4 * 4) } {}
+MainComponent::~MainComponent()
+{
+    setLookAndFeel(nullptr);
+}
 void MainComponent::resized()
 {
-    auto bounds = getLocalBounds();
-    toolbar_bounds = bounds.removeFromTop(proportionOfHeight(0.05f));
-    
-    auto button_bounds = toolbar_bounds;
-    const auto button_width = proportionOfWidth(0.1f);
-    live_compile_btn.setBounds(button_bounds.removeFromLeft(button_width));
-    num_panels_txt.setBounds(button_bounds.removeFromLeft(button_width));
-    square_btn.setBounds(button_bounds.removeFromLeft(button_width));
-    rows_btn.setBounds(button_bounds.removeFromLeft(button_width));
-    columns_btn.setBounds(button_bounds.removeFromLeft(button_width));
-
-    
-    const auto panel_area_height = bounds.proportionOfHeight(0.25f);
-    
-    visitChildren([&, i = 0](auto& child) mutable {
-        child.setBounds(bounds.removeFromTop(panel_area_height));
-        i = i % 2;
-    });
+    auto bounds = getLocalBounds().toFloat();
+    tool_bar.setBounds(bounds.removeFromTop(proportionOfHeight(0.05f)).toNearestIntEdges());
+    resize_panels(bounds);
 }
-void MainComponent::paint(Graphics& g) { info_display.paint(g); }
 void MainComponent::renderOpenGLParent()
 {
     sin_time = static_cast<float>(std::sin(Time::currentTimeMillis() / 1000.));
-    info_display.log([this]{ repaint(toolbar_bounds.toNearestIntEdges()); });
+    tool_bar.log();
 }
-std::optional<Rectangle<int>> MainComponent::getParentClippedDrawArea() { return toolbar_bounds; }
+std::optional<Rectangle<int>> MainComponent::getParentClippedDrawArea() { return std::nullopt; }
 bool MainComponent::isInterestedInFileDrag(const StringArray& files) { return true; }
 void MainComponent::filesDropped(const StringArray& files, int x, int y)
 {
-    visitChildren([&](auto& child){
+    visitChildren([&](auto& child) {
         if (const auto child_bounds = child.getBounds();
             child_bounds.contains(x, y)) {
             
@@ -104,59 +50,59 @@ void MainComponent::filesDropped(const StringArray& files, int x, int y)
             return;
         }
     });
+    // If dragged in a non-child area, load the same file into all panels.
+    openGLContext.detach();
+    visitChildren([&](auto& child) {
+        if (auto* shader_panel = dynamic_cast<LiveShaderPanel*>(&child)) {
+            shader_panel->load_shader_file(files[0]);
+        }
+    });
+    openGLContext.attachTo(*this);
+}
+void MainComponent::timerCallback() { recompile_shaders(); }
+
+//==============================================================================
+
+void MainComponent::update_layout()
+{
+    MessageManager::callAsync([&] {
+        openGLContext.detach();
+        const auto initial_num_panels = static_cast<int>(getNumOpenGLChildComponents());
+        const auto delta_panels = tool_bar.get_num_panels()  - initial_num_panels;
+        if (0 < delta_panels) {
+            add_panels(initial_num_panels, delta_panels);
+        }
+        else {
+            for (int i = delta_panels; ++i <= 0;) {
+                removeOpenGLChildComponent(initial_num_panels + delta_panels);
+            }
+        }
+        resized();
+        openGLContext.attachTo(*this);
+    });
 }
 float MainComponent::get_rendering_scale() const { return getRenderingScale(); }
 float MainComponent::get_sin_time() const { return sin_time; }
 
-// private: ====================================================================
-MainComponent::InfoDisplay::InfoDisplay(MainComponent& parent) : parent{ parent } {}
-void MainComponent::InfoDisplay::log(std::function<void()> repaint)
-{   // OpenGL thread - do not block
-    ++frame_count;
-    if (const auto current_time = Time::currentTimeMillis();
-        current_time - prev_time >= 1000.){
-        ms_frame = 1000. / frame_count;
-        frame_count = 0;
-        prev_time = current_time;
-        MessageManager::callAsync(repaint);
-    }
-}
-void MainComponent::InfoDisplay::paint(Graphics& g)
-{
-    g.setColour(Colours::black);
-    g.fillRect(parent.toolbar_bounds);
-    g.setColour(Colours::white);
-    
-    g.setFont(Font{
-        Font::getDefaultMonospacedFontName(),
-        static_cast<float>(parent.toolbar_bounds.proportionOfHeight(0.75f)),
-        0
-    });
-//    g.drawText(String::formatted("%.2f ms/frame | sin(t):% 2.2f", ms_frame, parent.sin_time),
-//               parent.toolbar_bounds, Justification::topRight);
-    std::visit([&](auto& v){
-        g.drawText(String::formatted("%.2f ms/frame | np:%d", ms_frame, v.num_panels),
-                   parent.toolbar_bounds, Justification::topRight);
+//==============================================================================
 
-    }, parent.panel_arranger.layout);
-}
-void MainComponent::timerCallback() { recompile_shaders(); }
-void MainComponent::init_buttons(LookAndFeel& look)
+MainComponent::Look::Look()
 {
-    live_compile_btn.setClickingTogglesState(true);
-    live_compile_btn.onClick = [this] {
-        if (live_compile_btn.getToggleState()) {
-            startTimer(compile_interval_ms);
-        }
-        else {
-            stopTimer();
-        }
-    };
-    look.setColour(TextButton::buttonColourId, Colours::black);
-    look.setColour(TextButton::buttonOnColourId, Colours::black);
-    look.setColour(TextButton::textColourOffId, Colours::grey);
-    addAndMakeVisible(live_compile_btn);
-    //    live_compile.triggerClick();
+    setColour(ResizableWindow:: backgroundColourId, Colours::black);
+    setColour(TextButton::      buttonColourId,     Colours::black);
+    setColour(TextButton::      buttonOnColourId,   Colours::black);
+    setColour(TextButton::      textColourOffId,    Colours::grey);
+    setColour(TextEditor::      backgroundColourId, Colours::black);
+    setColour(TextEditor::      outlineColourId,    Colours::grey);
+}
+
+// MainComponent::private: =====================================================
+
+void MainComponent::add_panels(const int initial_num_panels, const int num_panels_to_add)
+{
+    for (int i = initial_num_panels; i != initial_num_panels + num_panels_to_add; ++i) {
+        addOpenGLChildComponent(std::make_shared<LiveShaderPanel>(*this, i));
+    }
 }
 void MainComponent::recompile_shaders()
 {
@@ -168,4 +114,30 @@ void MainComponent::recompile_shaders()
     });
     openGLContext.attachTo(*this);
 }
-
+void MainComponent::resize_panels(Rectangle<float>& bounds)
+{
+    std::visit(VariantVisitor{ 
+        [&](const ToolBar::LayoutType::Tiled& l) {
+            const auto panels_per_side = static_cast<int>(std::sqrt(l.num_panels));
+            const auto panel_width = bounds.proportionOfWidth(1.f / panels_per_side);
+            const auto panel_height = bounds.proportionOfHeight(1.f / panels_per_side);
+            visitChildren([&, i = 0](auto& child) mutable {
+                child.setBounds(Rectangle<float>{
+                    i % panels_per_side * panel_width,
+                    getHeight() - (i / panels_per_side * panel_height) - panel_height,
+                    panel_width,
+                    panel_height
+                }.toNearestIntEdges());
+                ++i;
+            });
+        },
+        [&](const ToolBar::LayoutType::Rows& l) {
+            const auto panel_height = bounds.proportionOfHeight(1.f / l.num_panels);
+            visitChildren([&](auto& child) { child.setBounds(bounds.removeFromBottom(panel_height).toNearestIntEdges()); });
+        },
+        [&](const ToolBar::LayoutType::Columns& l) {
+            const auto panel_width = bounds.proportionOfWidth(1.f / l.num_panels);
+            visitChildren([&](auto& child) { child.setBounds(bounds.removeFromLeft(panel_width).toNearestIntEdges()); });
+        }
+    }, tool_bar.get_layout());
+}
