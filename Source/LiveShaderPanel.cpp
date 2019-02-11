@@ -15,7 +15,7 @@
 //==============================================================================
 
 LiveShaderPanel::LiveShaderPanel(MainComponent& parent, const int component_ID)
-: live_shader_program{ std::make_unique<LiveShaderProgram>(*this, serialization.get_vertex_file(), serialization.get_fragment_file()) }
+: live_shader_program{ std::make_unique<LiveShaderProgram>(parent, *this, serialization.get_vertex_file(), serialization.get_fragment_file()) }
 , parent{ parent }
 {
     setComponentID(String{ component_ID });
@@ -48,7 +48,5 @@ void LiveShaderPanel::load_shader_file(const String& file_path)
 void LiveShaderPanel::recompile_shader()
 {
     live_shader_program.reset(new LiveShaderProgram{
-        *this, serialization.get_vertex_file(), serialization.get_fragment_file() });
+        parent, *this, serialization.get_vertex_file(), serialization.get_fragment_file() });
 }
-float LiveShaderPanel::get_rendering_scale() const { return parent.get_rendering_scale(); }
-float LiveShaderPanel::get_sin_time() const { return parent.get_sin_time(); }

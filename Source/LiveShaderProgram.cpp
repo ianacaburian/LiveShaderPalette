@@ -10,12 +10,14 @@
 
 #include "LiveShaderProgram.h"
 #include "LiveShaderPanel.h"
+#include "MainComponent.h"
 
 //==============================================================================
 
-LiveShaderProgram::LiveShaderProgram(LiveShaderPanel& panel,
+LiveShaderProgram::LiveShaderProgram(MainComponent& parent, LiveShaderPanel& panel,
                                      const File& vertex_file, const File& fragment_file)
 : shader_program_source{ vertex_file.loadFileAsString(), fragment_file.loadFileAsString() }
+, parent{ parent }
 , panel{ panel }
 {
 }
@@ -88,34 +90,60 @@ String LiveShaderProgram::LiveShader::create_default_shader_source(const GLenum 
 
 //==============================================================================
 
-LiveShaderProgram::Uniforms::Uniforms(LiveShaderProgram& parent)
-: parent{ parent }
+LiveShaderProgram::Uniforms::Uniforms(LiveShaderProgram& program)
+: program{ program }
 {
 }
 void LiveShaderProgram::Uniforms::create()
 {
-    // Static uniforms
-    GL::glUniform4f(get_uniform_location("uf_panel"), parent.panel.getWidth(), parent.panel.getHeight(),
-                    parent.panel.get_rendering_scale(), parent.panel.getComponentID().getFloatValue());
+    const auto layout = program.parent.get_layout();
+    GL::glUniform4i(get_uniform_location("uf_componentID_layout"),
+                    program.panel.getComponentID().getIntValue(),
+                    layout.first, layout.second, 0);
     
-    // Dynamic uniforms
-    uf_sin_time             = get_uniform_location("uf_sin_time");
+    uf_screen_size          = get_uniform_location("uf_panel_size");
+    uf_rendering_scale      = get_uniform_location("uf_rendering_scale");
     uf_mouse_type           = get_uniform_location("uf_mouse_type");
     uf_mouse_position       = get_uniform_location("uf_mouse_position");
-    
+    uf_time                 = get_uniform_location("uf_time");
+    uf_flags                = get_uniform_location("uf_flags");
+    uf_time                 = get_uniform_location("uf_mouse_options");
+
 }
 void LiveShaderProgram::Uniforms::send_uniforms()
 {
-    GL::glUniform1f(uf_sin_time, parent.panel.get_sin_time());
+    GL::glUniform4i(uf_screen_size, program.panel.getWidth(), program.panel.getHeight(),
+                    program.parent.getWidth(), program.parent.getHeight());
+    GL::glUniform1f(uf_rendering_scale, program.parent.get_rendering_scale());
     
-    const auto mouse_state = parent.panel.copyMouseState();
-    GL::glUniform2f(uf_mouse_position, mouse_state.mousePosition.x, mouse_state.mousePosition.y);
+    const auto mouse_state = program.panel.copyMouseState();
+    GL::glUniform1i(uf_mouse_type,          static_cast<int>(mouse_state.lastEventType.index()));
+    GL::glUniform4f(uf_mouse_position,      mouse_state.mousePosition.x, mouse_state.mousePosition.y,
+                                            mouse_state.mouseDownPosition.x, mouse_state.mouseDownPosition.y);
+    GL::glUniform4f(uf_time,                mouse_state.eventTime, mouse_state.mouseDownTime,
+                                            program.parent.get_sin_time(), program.parent.get_saw_time());
+    GL::glUniform4i(uf_flags, mouse_state.isDown, mouse_state.isToggled, mouse_state.isRightClick, 0);
+    
+    const auto mouse_options = mouse_options_to_float(mouse_state.lastEventType);
+    GL::glUniform2f(uf_mouse_options, mouse_options.x, mouse_options.y);
 }
 GLint LiveShaderProgram::Uniforms::get_uniform_location(const char* uniform_id) const
 {
-    return GL::glGetUniformLocation(parent.shader_prog_ID, uniform_id);
+    return GL::glGetUniformLocation(program.shader_prog_ID, uniform_id);
 }
-
+Point<float> LiveShaderProgram::Uniforms::mouse_options_to_float(const MouseVariant& last_event_type)
+{
+    return std::visit([&](auto&& m)->Point<float> {
+        using T = std::decay_t<decltype(m)>;
+        if constexpr (std::is_same_v<T, MouseType::WheelMove>) {
+            return { m.wheel.deltaX, m.wheel.deltaY };
+        }
+        else if constexpr (std::is_same_v<T, MouseType::Magnify>) {
+            return { m.scaleFactor, 0.f };
+        }
+        return { 0.f, 0.f };
+    }, last_event_type);
+}
 //==============================================================================
 
 Result LiveShaderProgram::verify_operation_sucess(GLuint object_id, const GLenum type)

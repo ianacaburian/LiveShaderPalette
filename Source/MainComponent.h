@@ -31,8 +31,11 @@ public:
     //==============================================================================
 
     void update_layout();
+    std::pair<int, int> get_layout() const;
     float get_rendering_scale() const;
     float get_sin_time() const;
+    float get_saw_time() const;
+    
     
 private:
     //==============================================================================
@@ -44,7 +47,8 @@ private:
     ToolBar tool_bar{ *this };
     Look look;
     Point<int> screen_resolution { 400, 300 };
-    float sin_time{};
+    float sin_time{}, saw_time;
+    int period = 1000;
     
     //==============================================================================
 

@@ -2,9 +2,15 @@
 // On macOS, only shader version 150 works, 330 isn’t supported
 #version 150
 
-uniform float uf_sin_time;
-uniform vec2 uf_mouse_position;
-uniform vec4 uf_panel;
+uniform vec4    uf_componentID_layout;  // { Component ID, Layout Type [ 0 = Tiled, 1 = Rows, 2 = Columns ], Number of panels, 0 }
+uniform vec4    uf_screen_size;         // { Panel width, Panel height, Screen width, Screen height }
+uniform float   uf_rendering_scale;
+uniform int     uf_mouse_type;          // [ 0 = Move, 1 = Enter, 2 = Exit, 3 = Down, 4 = Drag, 5 = Up, 6 = DoubleClick, 7 = WheelMove, 8 = Magnify ]
+uniform vec4    uf_mouse_position;      // { Mouse x-position, Mouse y-position, Mouse down x-position, Mouse down y-position }
+uniform vec4    uf_time;                // { Mouse event time, Mouse down time, Sin time, Saw time }
+uniform vec4    uf_flags;               // { Mouse button is down, Button toggle flag, Right mouse button, 0 }
+uniform vec2    uf_mouse_options;       // if (uf_mouse_type == 7) { delta-x, delta-y }; if (uf_mouse_type == 8) { Scale factor, 0. }; else { 0., 0. }
+
 out vec4 out_color;
 
 void main()
@@ -47,13 +53,13 @@ void main()
 //        }
 //        out_color = vec4(0., result, 0., 1.);
 
-    vec2 p = gl_PointCoord.xy / uf_sin_time;
+    float distance = 0.5;
+    vec2 p = gl_PointCoord.xy / distance;
     float thickness = .01;
-    float radius = uf_mouse_position.x / uf_panel.x;
-//    float radius = 0.5;
+    float radius = 0.5;
     float intensity = thickness/abs(radius - length(p));
     
-    out_color = vec4(0., intensity, intensity, .5);
+    out_color = vec4(0., intensity, 0., .5);
 
 }
 

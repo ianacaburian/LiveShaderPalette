@@ -31,7 +31,9 @@ void MainComponent::resized()
 }
 void MainComponent::renderOpenGLParent()
 {
-    sin_time = static_cast<float>(std::sin(Time::currentTimeMillis() / 1000.));
+    const auto time = Time::currentTimeMillis();
+    sin_time = static_cast<float>(std::sin(time / period));
+    saw_time = static_cast<float>(std::fmod(time, period) / period);
     tool_bar.log();
 }
 bool MainComponent::isInterestedInFileDrag(const StringArray& files) { return true; }
@@ -80,8 +82,10 @@ void MainComponent::update_layout()
         openGLContext.attachTo(*this);
     });
 }
+std::pair<int, int> MainComponent::get_layout() const { return { tool_bar.get_layout().index(), tool_bar.get_num_panels() }; }
 float MainComponent::get_rendering_scale() const { return getRenderingScale(); }
 float MainComponent::get_sin_time() const { return sin_time; }
+float MainComponent::get_saw_time() const { return saw_time; }
 
 //==============================================================================
 

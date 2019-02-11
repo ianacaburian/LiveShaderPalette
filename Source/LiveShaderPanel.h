@@ -31,9 +31,7 @@ public:
     //==============================================================================
     
     void load_shader_file(const String& file_path);
-    void recompile_shader();
-    float get_rendering_scale() const;
-    float get_sin_time() const;
+    void recompile_shader();    
 
 private:
     //==============================================================================
