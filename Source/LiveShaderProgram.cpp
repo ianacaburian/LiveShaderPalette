@@ -33,7 +33,7 @@ void LiveShaderProgram::create()
                                         shader_prog_ID };
     GL::glLinkProgram(shader_prog_ID);
     
-    if (const auto result = verify_operation_sucess(GL_LINK_STATUS, shader_prog_ID);
+    if (const auto result = verify_operation_sucess(shader_prog_ID, GL_LINK_STATUS);
         result.failed()) {
 
         DBG(result.getErrorMessage());
@@ -62,7 +62,7 @@ LiveShaderProgram::LiveShader::LiveShader(const GLenum type, const GLchar* sourc
     };
     create_shader(source, source_length);
 
-    if (const auto result = LiveShaderProgram::verify_operation_sucess(GL_COMPILE_STATUS, shader_ID);
+    if (const auto result = LiveShaderProgram::verify_operation_sucess(shader_ID, GL_COMPILE_STATUS);
         result.failed()) {
         
         DBG(Time::getCurrentTime().formatted("%I:%M:%S") << " " << result.getErrorMessage());
@@ -87,12 +87,16 @@ String LiveShaderProgram::LiveShader::create_default_shader_source(const GLenum 
 }
 
 //==============================================================================
-LiveShaderProgram::Uniforms::Uniforms(LiveShaderProgram& parent) : parent{ parent } {}
+
+LiveShaderProgram::Uniforms::Uniforms(LiveShaderProgram& parent)
+: parent{ parent }
+{
+}
 void LiveShaderProgram::Uniforms::create()
 {
     // Static uniforms
     GL::glUniform4f(get_uniform_location("uf_panel"), parent.panel.getWidth(), parent.panel.getHeight(),
-                    parent.panel.get_rendering_scale(), parent.panel.get_panel_ID());
+                    parent.panel.get_rendering_scale(), parent.panel.getComponentID().getFloatValue());
     
     // Dynamic uniforms
     uf_sin_time             = get_uniform_location("uf_sin_time");
@@ -104,8 +108,8 @@ void LiveShaderProgram::Uniforms::send_uniforms()
 {
     GL::glUniform1f(uf_sin_time, parent.panel.get_sin_time());
     
-    const auto mouse_state = parent.panel.get_mouse_state();
-    GL::glUniform2f(uf_mouse_position, mouse_state.mouse_position.x, mouse_state.mouse_position.y);
+    const auto mouse_state = parent.panel.copyMouseState();
+    GL::glUniform2f(uf_mouse_position, mouse_state.mousePosition.x, mouse_state.mousePosition.y);
 }
 GLint LiveShaderProgram::Uniforms::get_uniform_location(const char* uniform_id) const
 {
@@ -114,32 +118,16 @@ GLint LiveShaderProgram::Uniforms::get_uniform_location(const char* uniform_id) 
 
 //==============================================================================
 
-Result LiveShaderProgram::verify_operation_sucess(const GLenum type, GLuint object_id)
+Result LiveShaderProgram::verify_operation_sucess(GLuint object_id, const GLenum type)
 {
     GLint success;
-    if (type == GL_COMPILE_STATUS) {
-        GL::glGetShaderiv(object_id, type, &success);
-    }
-    else {
-        GL::glGetProgramiv(object_id, type, &success);
-    }
+    (type == GL_COMPILE_STATUS ? GL::glGetShaderiv : GL::glGetProgramiv)(object_id, type, &success);
     if (! success) {    // TODO: create and print to a separate console window
-        
         GLint length;
         glGetShaderiv(object_id, GL_INFO_LOG_LENGTH, &length);
-        if (type == GL_COMPILE_STATUS) {
-            GL::glGetShaderiv(object_id, GL_INFO_LOG_LENGTH, &length);
-        }
-        else {
-            GL::glGetProgramiv(object_id, GL_INFO_LOG_LENGTH, &length);
-        }
+        (type == GL_COMPILE_STATUS ? GL::glGetShaderiv : GL::glGetProgramiv)(object_id, GL_INFO_LOG_LENGTH, &length);
         auto* message = static_cast<char*>(alloca(sizeof(char) * length));
-        if (type == GL_COMPILE_STATUS) {
-            GL::glGetShaderInfoLog(object_id, length, &length, message);
-        }
-        else {
-            GL::glGetProgramInfoLog(object_id, length, &length, message);
-        }
+        (type == GL_COMPILE_STATUS ? GL::glGetShaderInfoLog : GL::glGetProgramInfoLog)(object_id, length, &length, message);
         return Result::fail(message);
     }
     return Result::ok();

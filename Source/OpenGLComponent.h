@@ -11,7 +11,6 @@
 #pragma once
 #include "../JuceLibraryCode/JuceHeader.h"
 #include <variant>
-#include <optional>
 
 //==============================================================================
 
@@ -19,71 +18,62 @@ class OpenGLRectangle final
 {
     using GL = juce::OpenGLExtensionFunctions;
 public:
+    //==============================================================================
+    
     OpenGLRectangle() {}
     ~OpenGLRectangle() = default;
+    
+    //==============================================================================
+    
     void create()
     {
-        constexpr auto positions_count = 8;
-        const GLfloat positions[positions_count] {
+        constexpr auto positionsCount = 8;
+        const GLfloat positions[positionsCount] {
             -1.0f, -1.0f,
              1.0f, -1.0f,
              1.0f,  1.0f,
             -1.0f,  1.0f
         };
-        const GLuint elements[elements_count] {
+        const GLuint elements[elementsCount] {
             0, 1, 2,
             0, 2, 3
         };
-        GL::glGenVertexArrays(1, &vertex_arr_ID);
-        GL::glBindVertexArray(vertex_arr_ID);
+        GL::glGenVertexArrays(1, &arrayID);
+        GL::glBindVertexArray(arrayID);
         
-        GL::glGenBuffers(1, &vertex_buff_ID);
-        GL::glBindBuffer(GL_ARRAY_BUFFER, vertex_buff_ID);
-        GL::glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * positions_count, positions, GL_STATIC_DRAW);
+        GL::glGenBuffers(1, &bufferID);
+        GL::glBindBuffer(GL_ARRAY_BUFFER, bufferID);
+        GL::glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * positionsCount, positions, GL_STATIC_DRAW);
         
-        const auto position_attrib_id = 0, dimensions = 2;
-        GL::glEnableVertexAttribArray(position_attrib_id);
-        GL::glVertexAttribPointer(position_attrib_id, dimensions, GL_FLOAT, GL_FALSE,
-                                  sizeof(GLfloat) * dimensions, (const void*)0);
+        const auto positionAttribID = 0, dimensions = 2;
+        GL::glEnableVertexAttribArray(positionAttribID);
+        GL::glVertexAttribPointer(positionAttribID, dimensions, GL_FLOAT, GL_FALSE,
+                                  sizeof(GLfloat) * dimensions, 0);
         
-        GL::glGenBuffers(1, &index_buff_ID);
-        GL::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buff_ID);
-        GL::glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * elements_count, elements, GL_STATIC_DRAW);
+        GL::glGenBuffers(1, &elementsID);
+        GL::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementsID);
+        GL::glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * elementsCount, elements, GL_STATIC_DRAW);
     }
     void render()
     {
-        GL::glBindVertexArray(vertex_arr_ID);
-        GL::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buff_ID);
-        glDrawElements(GL_TRIANGLES, elements_count, GL_UNSIGNED_INT, nullptr);
+        GL::glBindVertexArray(arrayID);
+        GL::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementsID);
+        glDrawElements(GL_TRIANGLES, elementsCount, GL_UNSIGNED_INT, nullptr);
     }
     void delete_vertex_objects()
     {
-        GL::glDeleteVertexArrays(1, &vertex_arr_ID);
-        GL::glDeleteBuffers(1, &vertex_buff_ID);
-        GL::glDeleteBuffers(1, &index_buff_ID);
+        GL::glDeleteVertexArrays(1, &arrayID);
+        GL::glDeleteBuffers(1, &bufferID);
+        GL::glDeleteBuffers(1, &elementsID);
     }
+    
 private:
-    static constexpr int elements_count = 6;
-    GLuint vertex_arr_ID{}, vertex_buff_ID{}, index_buff_ID{};
+    //==============================================================================
+    
+    GLuint arrayID{}, bufferID{}, elementsID{};
+    static constexpr int elementsCount = 6;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenGLRectangle)
-};
-
-//==============================================================================
-
-class OpenGLChildComponent : public MouseListener, public OpenGLRenderer
-{
-public:
-    explicit OpenGLChildComponent() = default;
-    ~OpenGLChildComponent() = default;
-    Rectangle<int> getBounds() const { return bounds; }
-    int getX() const { return bounds.getX(); }
-    int getBottom() const { return bounds.getBottom(); }
-    int getWidth() const { return bounds.getWidth(); }
-    int getHeight() const { return bounds.getHeight(); }
-    void setBounds(const Rectangle<int>& new_bounds) { bounds = new_bounds; }
-private:
-    Rectangle<int> bounds;
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenGLChildComponent)
 };
 
 //==============================================================================
@@ -97,7 +87,7 @@ struct MouseType
     struct Drag{};
     struct Up{};
     struct DoubleClick{};
-    struct WheelMove{ const MouseWheelDetails& wheel; };
+    struct WheelMove{ MouseWheelDetails wheel; };
     struct Magnify{ float scaleFactor; };
 };
 
@@ -118,12 +108,116 @@ template<class... Ts> VariantVisitor(Ts...) -> VariantVisitor<Ts...>;           
 
 //==============================================================================
 
+class OpenGLChildComponent : public MouseListener, public OpenGLRenderer
+{
+public:
+    //==============================================================================
+    
+    struct MouseState
+    {
+        MouseVariant lastEventType{ MouseType::Up{} };
+        Point<float> mousePosition{}, mouseDownPosition{};
+        float eventTime{}, mouseDownTime{};
+        bool isDown{}, isRightClick{}, isToggled{};
+        
+        void captureEvent(const MouseEvent& mouseEvent, MouseVariant&& eventType)
+        {
+            lastEventType = eventType;
+            mousePosition = mouseEvent.position;
+            mouseDownPosition = mouseEvent.mouseDownPosition;
+            eventTime       = std::fmodf(static_cast<double>(mouseEvent.eventTime.toMilliseconds()),
+                                         static_cast<double>(std::numeric_limits<float>::max()));
+            mouseDownTime   = std::fmodf(static_cast<double>(mouseEvent.mouseDownTime.toMilliseconds()),
+                                         static_cast<double>(std::numeric_limits<float>::max()));
+        }
+    };
+
+    //==============================================================================
+    
+    explicit OpenGLChildComponent() = default;
+    ~OpenGLChildComponent() = default;
+    void mouseMove(const MouseEvent& mouseEvent) override
+    {
+        mouseState.captureEvent(mouseEvent, MouseType::Move{});
+        DBG("mouseMove() | #" << componentID << " eventPosition: " << mouseEvent.position.toString()); // TODO to log console
+    }
+    void mouseEnter(const MouseEvent& mouseEvent) override
+    {
+        mouseState.captureEvent(mouseEvent, MouseType::Enter{});
+        DBG("mouseEnter() | #" << componentID << " eventPosition: " << mouseEvent.position.toString()); // TODO to log console
+    }
+    void mouseExit(const MouseEvent& mouseEvent) override
+    {
+        mouseState.captureEvent(mouseEvent, MouseType::Exit{});
+        DBG("mouseExit() | #" << componentID << " eventPosition: " << mouseEvent.position.toString()); // TODO to log console
+    }
+    void mouseDown(const MouseEvent& mouseEvent) override
+    {
+        mouseState.captureEvent(mouseEvent, MouseType::Down{});
+        mouseState.isToggled = ! mouseState.isToggled;
+        mouseState.isDown = true;
+        mouseState.isRightClick = mouseEvent.mods.isRightButtonDown();
+        DBG("mouseDown() | #" << componentID << " eventPosition: " << mouseEvent.position.toString()); // TODO to log console
+    }
+    void mouseDrag(const MouseEvent& mouseEvent) override
+    {
+        mouseState.captureEvent(mouseEvent, MouseType::Drag{});
+        DBG("mouseDrag() | #" << componentID << " eventPosition: " << mouseEvent.position.toString()); // TODO to log console
+    }
+    void mouseUp(const MouseEvent& mouseEvent) override
+    {
+        mouseState.captureEvent(mouseEvent, MouseType::Up{});
+        mouseState.isDown = false;
+        DBG("mouseUp() | #" << componentID << " eventPosition: " << mouseEvent.position.toString());
+    }
+    void mouseDoubleClick(const MouseEvent& mouseEvent) override
+    {
+        mouseState.captureEvent(mouseEvent, MouseType::DoubleClick{});
+        DBG("mouseDoubleClick() | #" << componentID << " eventPosition: " << mouseEvent.position.toString()); // TODO to log console
+
+    }
+    void mouseWheelMove(const MouseEvent& mouseEvent, const MouseWheelDetails& wheel) override
+    {
+        mouseState.captureEvent(mouseEvent, MouseType::WheelMove{ wheel });
+        DBG("mouseWheelMove() | #" << componentID << " eventPosition: " << mouseEvent.position.toString()); // TODO to log console
+
+    }
+    void mouseMagnify(const MouseEvent& mouseEvent, float scaleFactor) override
+    {
+        mouseState.captureEvent(mouseEvent, MouseType::Magnify{ scaleFactor });
+        DBG("mouseMagnify() | #" << componentID << " eventPosition: " << mouseEvent.position.toString()); // TODO to log console
+    }
+
+    //==============================================================================
+
+    void            setComponentID(const String& newID)             { componentID = newID; }
+    void            setBounds(const Rectangle<int>& new_bounds)     { bounds = new_bounds; }
+    MouseState      copyMouseState() const                          { return mouseState; }
+    const String&   getComponentID() const                          { return componentID; }
+    Rectangle<int>  getBounds() const                               { return bounds; }
+    int             getX() const                                    { return bounds.getX(); }
+    int             getBottom() const                               { return bounds.getBottom(); }
+    int             getWidth() const                                { return bounds.getWidth(); }
+    int             getHeight() const                               { return bounds.getHeight(); }
+
+private:
+    //==============================================================================
+    
+    MouseState mouseState{};
+    String componentID{};
+    Rectangle<int> bounds{};
+    
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenGLChildComponent)
+};
+
+//==============================================================================
+
 class OpenGLParentComponent : public Component, public OpenGLRenderer
 {
 public:
+    //==============================================================================
     explicit OpenGLParentComponent()
     {
-
         openGLContext.setOpenGLVersionRequired(juce::OpenGLContext::openGL3_2);
         openGLContext.setContinuousRepainting(true);
         openGLContext.setComponentPaintingEnabled(true);
@@ -157,7 +251,6 @@ protected:
     virtual void newOpenGLContextCreatedParent() {}
     virtual void renderOpenGLParent() {}
     virtual void openGLContextClosingParent() {}
-    virtual std::optional<Rectangle<int>> getParentClippedDrawArea() = 0;
     
     //==============================================================================
 
@@ -186,7 +279,6 @@ private:
 
         glEnable(GL_SCISSOR_TEST); // This needs to be called here, and has no effect in the initialization function for some reason
         
-        clipDrawArea(getParentClippedDrawArea());
         renderOpenGLParent();
         
         visitChildren([this](auto& child) {
@@ -199,22 +291,20 @@ private:
         visitChildren([](auto& child) { child.openGLContextClosing(); });
         openGLContextClosingParent();
     }
-    void clipDrawArea(const std::optional<Rectangle<int>>& area)
+    void clipDrawArea(const Rectangle<int>& area)
     {
-        if (area) {
-            const auto x = area.value().getX() * renderingScale;
-            const auto y = (getHeight() - area.value().getBottom()) * renderingScale;
-            const auto w = area.value().getWidth() * renderingScale;
-            const auto h = area.value().getHeight() * renderingScale;
-            glViewport(x, y, w, h);
-            glScissor(x, y, w, h);
-        }
+        const auto x = area.getX() * renderingScale;
+        const auto y = (getHeight() - area.getBottom()) * renderingScale;
+        const auto w = area.getWidth() * renderingScale;
+        const auto h = area.getHeight() * renderingScale;
+        glViewport(x, y, w, h);
+        glScissor(x, y, w, h);
     }
     void mouseCall(const MouseEvent& mouseEvent, const MouseVariant mouseVariant)
     {
         for (auto& child : children) {
             if (const auto childBounds = child->getBounds().toFloat();
-                childBounds.contains(mouseEvent.position)) {
+                childBounds.contains(mouseEvent.mouseDownPosition)) {
                 
                 const auto childEvent = mouseEvent.withNewPosition(Point<float>{
                     mouseEvent.position.x - childBounds.getX(),

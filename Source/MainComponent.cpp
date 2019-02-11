@@ -34,7 +34,6 @@ void MainComponent::renderOpenGLParent()
     sin_time = static_cast<float>(std::sin(Time::currentTimeMillis() / 1000.));
     tool_bar.log();
 }
-std::optional<Rectangle<int>> MainComponent::getParentClippedDrawArea() { return std::nullopt; }
 bool MainComponent::isInterestedInFileDrag(const StringArray& files) { return true; }
 void MainComponent::filesDropped(const StringArray& files, int x, int y)
 {

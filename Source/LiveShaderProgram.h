@@ -76,7 +76,7 @@ private:
     
     //==============================================================================
 
-    static Result verify_operation_sucess(const GLenum type, GLuint object_id);
+    static Result verify_operation_sucess(GLuint object_id, const GLenum type);
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LiveShaderProgram)
 };

@@ -24,7 +24,6 @@ public:
     ~MainComponent();
     void resized() override;
     void renderOpenGLParent() override;
-    std::optional<Rectangle<int>> getParentClippedDrawArea() override;
     bool isInterestedInFileDrag (const StringArray& files) override;
     void filesDropped (const StringArray& files, int x, int y) override;
     void timerCallback() override;
