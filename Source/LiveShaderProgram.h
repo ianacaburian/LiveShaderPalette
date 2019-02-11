@@ -10,6 +10,7 @@
 
 #pragma once
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "OpenGLComponent.h"
 class LiveShaderPanel;
 
 //==============================================================================
@@ -18,14 +19,6 @@ class LiveShaderProgram
 {
     using GL = juce::OpenGLExtensionFunctions;
 public:
-    //==============================================================================
-
-    struct ShaderProgramSource
-    {
-        String vertex;
-        String fragment;
-    };
-    
     //==============================================================================
 
     LiveShaderProgram(LiveShaderPanel& panel, const File& vertex_file, const File& fragment_file);
@@ -37,37 +30,53 @@ public:
     void use();
     void render();
     void delete_program();
-    
+
 private:
     //==============================================================================
 
     struct LiveShader
     {
+        GLuint shader_ID;
+        
         LiveShader(const GLenum type, const GLchar* source, const GLint source_length, const GLuint shader_prog_ID);
         ~LiveShader();
         static String create_default_shader_source(const GLenum type);
-        GLuint shader_ID;
     };
     
     //==============================================================================
 
     struct Uniforms
     {
+        GLint
+        uf_sin_time,
+        uf_mouse_type,
+        uf_mouse_position;
+        LiveShaderProgram& parent;
         
+        Uniforms(LiveShaderProgram& parent);
+        void create();
+        void send_uniforms();
+        GLint get_uniform_location(const char* uniform_id) const;
     };
     
     //==============================================================================
 
-    LiveShaderPanel& panel;
+    struct ShaderProgramSource
+    {
+        String vertex;
+        String fragment;
+    };
+
+    //==============================================================================
+
+    Uniforms uniforms{ *this };
     ShaderProgramSource shader_program_source{};
     GLuint shader_prog_ID{};
-    GLint uf_sin_time{};
-    static constexpr int max_info_chars = 512;
+    LiveShaderPanel& panel;
     
     //==============================================================================
 
-    void create_uniforms();
-    GLint get_uniform_location(const char* uniform_id) const;
+    static Result verify_operation_sucess(const GLenum type, GLuint object_id);
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LiveShaderProgram)
 };

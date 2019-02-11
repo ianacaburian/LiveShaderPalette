@@ -3,6 +3,7 @@
 #version 150
 
 uniform float uf_sin_time;
+uniform vec2 uf_mouse_position;
 uniform vec4 uf_panel;
 out vec4 out_color;
 
@@ -27,12 +28,14 @@ void main()
 //    float intensity = thickness/abs(radius - length(p));
 //
 //    out_color = vec4(intensity, 0., intensity, .5);
-    vec2 p = (gl_PointCoord.xy) / (uf_sin_time);
-    float thickness = 0.02;
-    float radius = 0.5;
-    float intensity = thickness/abs(radius - length(p));
-
-    out_color = vec4(0., intensity, intensity, .5);
+    
+    
+//    vec2 p = gl_PointCoord.xy / uf_sin_time;
+//    float thickness = 0.02;
+//    float radius = 0.5;
+//    float intensity = thickness/abs(radius - length(p));
+//
+//    out_color = vec4(0., intensity, intensity, .5);
     
 //        float result = 0.;
 //    //    if (sin_time <= gl_PointCoord.x && gl_PointCoord.x < sin_time + 0.1) {
@@ -43,6 +46,14 @@ void main()
 //            result = 1.;
 //        }
 //        out_color = vec4(0., result, 0., 1.);
+
+    vec2 p = gl_PointCoord.xy / uf_sin_time;
+    float thickness = .01;
+    float radius = uf_mouse_position.x / uf_panel.x;
+//    float radius = 0.5;
+    float intensity = thickness/abs(radius - length(p));
+    
+    out_color = vec4(0., intensity, intensity, .5);
 
 }
 

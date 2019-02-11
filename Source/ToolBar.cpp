@@ -67,7 +67,7 @@ void ToolBar::InfoDisplay::paint(Graphics& g)
     g.fillRect(bounds);
     g.setColour(Colours::white);
     g.setFont(mono_font(static_cast<float>(bounds.getHeight())));
-    g.drawText(String::formatted("%.2f ms/frame | sin(t):% 2.2f", ms_frame, parent.get_sin_time()),
+    g.drawText(String::formatted("%.2f ms/frame", ms_frame),
                bounds, Justification::centredRight);
 }
 

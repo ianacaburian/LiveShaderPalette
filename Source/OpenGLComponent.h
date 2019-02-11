@@ -15,11 +15,6 @@
 
 //==============================================================================
 
-template<class... Ts> struct VariantVisitor : Ts... { using Ts::operator()...; };   // overloaded call operator
-template<class... Ts> VariantVisitor(Ts...) -> VariantVisitor<Ts...>;               // arg deduction guide
-
-//==============================================================================
-
 class OpenGLRectangle final
 {
     using GL = juce::OpenGLExtensionFunctions;
@@ -90,6 +85,36 @@ private:
     Rectangle<int> bounds;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenGLChildComponent)
 };
+
+//==============================================================================
+
+struct MouseType
+{
+    struct Move{};
+    struct Enter{};
+    struct Exit{};
+    struct Down{};
+    struct Drag{};
+    struct Up{};
+    struct DoubleClick{};
+    struct WheelMove{ const MouseWheelDetails& wheel; };
+    struct Magnify{ float scaleFactor; };
+};
+
+using MouseVariant = std::variant<MouseType::Move,
+                                  MouseType::Enter,
+                                  MouseType::Exit,
+                                  MouseType::Down,
+                                  MouseType::Drag,
+                                  MouseType::Up,
+                                  MouseType::DoubleClick,
+                                  MouseType::WheelMove,
+                                  MouseType::Magnify>;
+
+//==============================================================================
+
+template<class... Ts> struct VariantVisitor : Ts... { using Ts::operator()...; };   // overloaded call operator
+template<class... Ts> VariantVisitor(Ts...) -> VariantVisitor<Ts...>;               // arg deduction guide
 
 //==============================================================================
 
@@ -185,30 +210,7 @@ private:
             glScissor(x, y, w, h);
         }
     }
-    // Mouse Forwarding ========================================================
-    struct MouseType
-    {
-        struct Move{};
-        struct Enter{};
-        struct Exit{};
-        struct Down{};
-        struct Drag{};
-        struct Up{};
-        struct DoubleClick{};
-        struct WheelMove{ const MouseWheelDetails& wheel; };
-        struct Magnify{ float scaleFactor; };
-    };
-    void mouseCall(const MouseEvent& mouseEvent,
-                   const std::variant<MouseType::Move,
-                                      MouseType::Enter,
-                                      MouseType::Exit,
-                                      MouseType::Down,
-                                      MouseType::Drag,
-                                      MouseType::Up,
-                                      MouseType::DoubleClick,
-                                      MouseType::WheelMove,
-                                      MouseType::Magnify>
-                                      mouseType)
+    void mouseCall(const MouseEvent& mouseEvent, const MouseVariant mouseVariant)
     {
         for (auto& child : children) {
             if (const auto childBounds = child->getBounds().toFloat();
@@ -228,7 +230,7 @@ private:
                     [&child, &childEvent](const MouseType::DoubleClick&)      { child->mouseDoubleClick(childEvent); },
                     [&child, &childEvent](const MouseType::WheelMove& m)      { child->mouseWheelMove(childEvent, m.wheel); },
                     [&child, &childEvent](const MouseType::Magnify& m)        { child->mouseMagnify(childEvent, m.scaleFactor); }
-                }, mouseType);
+                }, mouseVariant);
                 
                 return;
             }

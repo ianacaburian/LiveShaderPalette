@@ -13,9 +13,10 @@
 
 //==============================================================================
 
-LiveShaderProgram::LiveShaderProgram(LiveShaderPanel& panel, const File& vertex_file, const File& fragment_file)
-: panel{ panel }
-, shader_program_source{ vertex_file.loadFileAsString(), fragment_file.loadFileAsString() }
+LiveShaderProgram::LiveShaderProgram(LiveShaderPanel& panel,
+                                     const File& vertex_file, const File& fragment_file)
+: shader_program_source{ vertex_file.loadFileAsString(), fragment_file.loadFileAsString() }
+, panel{ panel }
 {
 }
 
@@ -32,44 +33,42 @@ void LiveShaderProgram::create()
                                         shader_prog_ID };
     GL::glLinkProgram(shader_prog_ID);
     
-    GLint success;
-    GL::glGetProgramiv(shader_prog_ID, GL_LINK_STATUS, &success);
-    if (!success) {
-        char info[max_info_chars];
-        GL::glGetProgramInfoLog(shader_prog_ID, max_info_chars, nullptr, info);
-        DBG(info);
+    if (const auto result = verify_operation_sucess(GL_LINK_STATUS, shader_prog_ID);
+        result.failed()) {
+
+        DBG(result.getErrorMessage());
         jassertfalse;
     }
     use();
-    create_uniforms();
+    uniforms.create();
 }
 void LiveShaderProgram::use() { GL::glUseProgram(shader_prog_ID); }
 void LiveShaderProgram::render()
 {
     use();
-    GL::glUniform1f(uf_sin_time, panel.get_sin_time());
+    uniforms.send_uniforms();
 }
 void LiveShaderProgram::delete_program() { GL::glDeleteProgram(shader_prog_ID); }
 
 //==============================================================================
 
-LiveShaderProgram::LiveShader::LiveShader(const GLenum type, const GLchar* source, const GLint source_length, const GLuint shader_prog_ID)
+LiveShaderProgram::LiveShader::LiveShader(const GLenum type, const GLchar* source,
+                                          const GLint source_length, const GLuint shader_prog_ID)
+: shader_ID{ GL::glCreateShader(type) }
 {
     auto create_shader = [this, type](const GLchar* source, const GLint source_length) {
-        shader_ID = GL::glCreateShader(type);
         GL::glShaderSource(shader_ID, 1, &source, &source_length);
         GL::glCompileShader(shader_ID);
     };
     create_shader(source, source_length);
 
-    GLint success;
-    GL::glGetShaderiv(shader_ID, GL_COMPILE_STATUS, &success);
-    if (! success) {    // TODO: create and print to a separate console window
-        char info[max_info_chars];
-        GL::glGetShaderInfoLog(shader_ID, max_info_chars, nullptr, info);
-        DBG(Time::getCurrentTime().formatted("%I:%M:%S") << " " << info);
+    if (const auto result = LiveShaderProgram::verify_operation_sucess(GL_COMPILE_STATUS, shader_ID);
+        result.failed()) {
+        
+        DBG(Time::getCurrentTime().formatted("%I:%M:%S") << " " << result.getErrorMessage());
         const auto default_shader_source = create_default_shader_source(type);
-        create_shader(default_shader_source.getCharPointer(), sizeof(GLchar) * default_shader_source.length());
+        create_shader(default_shader_source.getCharPointer(),
+                      sizeof(GLchar) * default_shader_source.length());
     }
     GL::glAttachShader(shader_prog_ID, shader_ID);
 }
@@ -79,7 +78,7 @@ LiveShaderProgram::LiveShader::~LiveShader()
 }
 String LiveShaderProgram::LiveShader::create_default_shader_source(const GLenum type)
 {
-    String s = "#version 150\n";
+    auto s = String{ "#version 150\n" };
     s << (type == GL_VERTEX_SHADER ? "in vec4 position" : "out vec4 color")
       << ";\nvoid main()\n{\n"
       << (type == GL_VERTEX_SHADER ? "gl_Position = position" : "color = vec4(.0, .0, .5, 1.)")
@@ -88,10 +87,60 @@ String LiveShaderProgram::LiveShader::create_default_shader_source(const GLenum 
 }
 
 //==============================================================================
-
-void LiveShaderProgram::create_uniforms()
+LiveShaderProgram::Uniforms::Uniforms(LiveShaderProgram& parent) : parent{ parent } {}
+void LiveShaderProgram::Uniforms::create()
 {
-    GL::glUniform4f(get_uniform_location("uf_panel"), panel.getWidth(), panel.getHeight(), panel.get_rendering_scale(), panel.get_panel_ID());
-    uf_sin_time = get_uniform_location("uf_sin_time");
+    // Static uniforms
+    GL::glUniform4f(get_uniform_location("uf_panel"), parent.panel.getWidth(), parent.panel.getHeight(),
+                    parent.panel.get_rendering_scale(), parent.panel.get_panel_ID());
+    
+    // Dynamic uniforms
+    uf_sin_time             = get_uniform_location("uf_sin_time");
+    uf_mouse_type           = get_uniform_location("uf_mouse_type");
+    uf_mouse_position       = get_uniform_location("uf_mouse_position");
+    
 }
-GLint LiveShaderProgram::get_uniform_location(const char* uniform_id) const { return GL::glGetUniformLocation(shader_prog_ID, uniform_id); }
+void LiveShaderProgram::Uniforms::send_uniforms()
+{
+    GL::glUniform1f(uf_sin_time, parent.panel.get_sin_time());
+    
+    const auto mouse_state = parent.panel.get_mouse_state();
+    GL::glUniform2f(uf_mouse_position, mouse_state.mouse_position.x, mouse_state.mouse_position.y);
+}
+GLint LiveShaderProgram::Uniforms::get_uniform_location(const char* uniform_id) const
+{
+    return GL::glGetUniformLocation(parent.shader_prog_ID, uniform_id);
+}
+
+//==============================================================================
+
+Result LiveShaderProgram::verify_operation_sucess(const GLenum type, GLuint object_id)
+{
+    GLint success;
+    if (type == GL_COMPILE_STATUS) {
+        GL::glGetShaderiv(object_id, type, &success);
+    }
+    else {
+        GL::glGetProgramiv(object_id, type, &success);
+    }
+    if (! success) {    // TODO: create and print to a separate console window
+        
+        GLint length;
+        glGetShaderiv(object_id, GL_INFO_LOG_LENGTH, &length);
+        if (type == GL_COMPILE_STATUS) {
+            GL::glGetShaderiv(object_id, GL_INFO_LOG_LENGTH, &length);
+        }
+        else {
+            GL::glGetProgramiv(object_id, GL_INFO_LOG_LENGTH, &length);
+        }
+        auto* message = static_cast<char*>(alloca(sizeof(char) * length));
+        if (type == GL_COMPILE_STATUS) {
+            GL::glGetShaderInfoLog(object_id, length, &length, message);
+        }
+        else {
+            GL::glGetProgramInfoLog(object_id, length, &length, message);
+        }
+        return Result::fail(message);
+    }
+    return Result::ok();
+}
