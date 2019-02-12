@@ -65,7 +65,8 @@ private:
     live_compile_btn    { "Live Compile" },
     tiled_btn           { "Tiled" },
     rows_btn            { "Rows" },
-    columns_btn         { "Columns" };
+    columns_btn         { "Columns" },
+    console_btn         { "Console" };
     static constexpr int compile_interval_ms = 2000;
 
     //==============================================================================

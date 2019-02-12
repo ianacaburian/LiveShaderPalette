@@ -114,7 +114,7 @@ void LiveShaderProgram::Uniforms::send_uniforms()
 {
     GL::glUniform4i(uf_screen_size, program.panel.getWidth(), program.panel.getHeight(),
                     program.parent.getWidth(), program.parent.getHeight());
-    GL::glUniform1f(uf_rendering_scale, program.parent.get_rendering_scale());
+    GL::glUniform1f(uf_rendering_scale, program.parent.getRenderingScale());
     
     const auto mouse_state = program.panel.copyMouseState();
     GL::glUniform1i(uf_mouse_type,          static_cast<int>(mouse_state.lastEventType.index()));

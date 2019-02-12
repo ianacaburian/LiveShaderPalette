@@ -10,6 +10,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "MainComponent.h"
+#include "Console.h"
 
 //==============================================================================
 class LearnJUCEOpenGLApplication  : public JUCEApplication

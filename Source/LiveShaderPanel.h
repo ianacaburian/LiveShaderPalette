@@ -15,6 +15,7 @@
 class MainComponent;
 class LiveShaderProgram;
 
+
 //==============================================================================
 
 class LiveShaderPanel   : public OpenGLChildComponent
@@ -31,11 +32,13 @@ public:
     //==============================================================================
     
     void load_shader_file(const String& file_path);
-    void recompile_shader();    
+    void recompile_shader();
+    void add_mouse_logger();
+    void delete_mouse_logger();
 
 private:
     //==============================================================================
-
+    
     OpenGLRectangle rectangle;
     Serialization serialization{ "Vert.vert", "Frag.frag" };
     std::unique_ptr<LiveShaderProgram> live_shader_program;

@@ -20,6 +20,7 @@ LiveShaderPanel::LiveShaderPanel(MainComponent& parent, const int component_ID)
 {
     setComponentID(String{ component_ID });
 }
+
 LiveShaderPanel::~LiveShaderPanel() {}
 
 void LiveShaderPanel::newOpenGLContextCreated()
@@ -49,4 +50,12 @@ void LiveShaderPanel::recompile_shader()
 {
     live_shader_program.reset(new LiveShaderProgram{
         parent, *this, serialization.get_vertex_file(), serialization.get_fragment_file() });
+}
+void LiveShaderPanel::add_mouse_logger()
+{
+//    mouse_logger = std::make_unique<MouseLogger>(getComponentID(), *this);
+}
+void LiveShaderPanel::delete_mouse_logger()
+{
+//    mouse_logger = nullptr;
 }

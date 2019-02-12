@@ -10,6 +10,7 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "OpenGLComponent.h"
 #include "ToolBar.h"
+class Console;
 
 //==============================================================================
 /*
@@ -21,8 +22,9 @@ class MainComponent   : public OpenGLParentComponent, public FileDragAndDropTarg
 public:
     //==============================================================================
     explicit MainComponent();
-    ~MainComponent();
+    ~MainComponent() = default;
     void resized() override;
+    void newOpenGLContextCreatedParent() override;
     void renderOpenGLParent() override;
     bool isInterestedInFileDrag (const StringArray& files) override;
     void filesDropped (const StringArray& files, int x, int y) override;
@@ -31,8 +33,8 @@ public:
     //==============================================================================
 
     void update_layout();
+    void open_console(const bool open);
     std::pair<int, int> get_layout() const;
-    float get_rendering_scale() const;
     float get_sin_time() const;
     float get_saw_time() const;
     
@@ -45,6 +47,7 @@ private:
     //==============================================================================
     
     ToolBar tool_bar{ *this };
+    std::unique_ptr<Console> console;
     Look look;
     Point<int> screen_resolution { 400, 300 };
     float sin_time{}, saw_time;

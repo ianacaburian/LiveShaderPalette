@@ -10,7 +10,7 @@
 
 #include "ToolBar.h"
 #include "MainComponent.h"
-
+#include "Console.h"
 //==============================================================================
 
 ToolBar::ToolBar(MainComponent& parent) : parent{ parent }
@@ -18,7 +18,10 @@ ToolBar::ToolBar(MainComponent& parent) : parent{ parent }
     addAndMakeVisible(info_display);
     addAndMakeVisible(num_panels_txt);
     addAndMakeVisible(live_compile_btn);
-    
+    addAndMakeVisible(console_btn);
+    live_compile_btn.setClickingTogglesState(true);
+    console_btn.setClickingTogglesState(true);
+
     initialize_layout_buttons();
     set_component_callbacks();
     //    live_compile.triggerClick();
@@ -29,7 +32,7 @@ void ToolBar::resized()
     num_panels_txt.applyFontToAllText(mono_font(static_cast<float>(bounds.getHeight())));
     const auto button_width = proportionOfWidth(0.1f);
     for (auto* c : std::initializer_list<Component*>{
-        &live_compile_btn, &num_panels_txt, &tiled_btn, &rows_btn, &columns_btn
+        &live_compile_btn, &num_panels_txt, &tiled_btn, &rows_btn, &columns_btn, &console_btn
     }) {
         c->setBounds(bounds.removeFromLeft(button_width));
     }
@@ -57,7 +60,19 @@ void ToolBar::InfoDisplay::log()
         ms_frame = 1000. / frame_count;
         frame_count = 0;
         prev_time = current_time;
-        MessageManager::callAsync([this] { repaint(); });
+        MessageManager::callAsync([this]
+        {
+            repaint();
+            if (parent.isLogging()) {
+                auto s = String{ "p" };
+                s << " Screen size: ( " << parent.getWidth() << ", " << parent.getHeight() << " )"
+                  << "" // TODO: add panel size here
+                  << " Rendering scale: " << parent.getRenderingScale() << " |"
+                  << "\nSin time: " << parent.get_sin_time() << " |"
+                  << " Saw time: " << parent.get_saw_time();
+                Logger::writeToLog(s);
+            }
+        });
     }
 }
 void ToolBar::InfoDisplay::paint(Graphics& g)
@@ -91,7 +106,7 @@ void ToolBar::initialize_layout_buttons()
         c->setClickingTogglesState(true);
         c->setRadioGroupId(1);
     }
-    std::visit(VariantVisitor{
+    std::visit(Overloader{
         [this](const LayoutType::Tiled& l) {
             tiled_btn    .setToggleState(true, sendNotificationSync);
             num_panels_txt.setText(String{ l.num_panels });
@@ -108,6 +123,14 @@ void ToolBar::initialize_layout_buttons()
 }
 void ToolBar::set_component_callbacks()
 {
+    live_compile_btn.onClick = [this] {
+        if (live_compile_btn.getToggleState()) {
+            parent.startTimer(compile_interval_ms);
+        }
+        else {
+            parent.stopTimer();
+        }
+    };
     num_panels_txt.onReturnKey = [this] {
         std::visit([this](const auto& l) {
             layout = std::decay_t<decltype(l)>{ num_panels_txt.getText().getIntValue() };
@@ -136,15 +159,8 @@ void ToolBar::set_component_callbacks()
         }, layout);
         parent.update_layout();
     };
-
-    live_compile_btn.setClickingTogglesState(true);
-    live_compile_btn.onClick = [this] {
-        if (live_compile_btn.getToggleState()) {
-            parent.startTimer(compile_interval_ms);
-        }
-        else {
-            parent.stopTimer();
-        }
+    console_btn.onClick = [this] {
+        parent.open_console(console_btn.getToggleState());
     };
 }
 Font ToolBar::mono_font(const float parent_height)

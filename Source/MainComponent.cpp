@@ -8,6 +8,7 @@
 
 #include "MainComponent.h"
 #include "LiveShaderPanel.h"
+#include "Console.h"
 
 //==============================================================================
 
@@ -15,19 +16,18 @@ MainComponent::MainComponent()
 {
     add_panels(0, tool_bar.get_num_panels());
 
-    setLookAndFeel(&look);
+    Desktop::getInstance().setDefaultLookAndFeel(&look);
     addAndMakeVisible(tool_bar);
     setSize(screen_resolution.x, screen_resolution.y);
-}
-MainComponent::~MainComponent()
-{
-    setLookAndFeel(nullptr);
 }
 void MainComponent::resized()
 {
     auto bounds = getLocalBounds().toFloat();
     tool_bar.setBounds(bounds.removeFromTop(proportionOfHeight(0.05f)).toNearestIntEdges());
     resize_panels(bounds);
+}
+void MainComponent::newOpenGLContextCreatedParent()
+{
 }
 void MainComponent::renderOpenGLParent()
 {
@@ -82,8 +82,17 @@ void MainComponent::update_layout()
         openGLContext.attachTo(*this);
     });
 }
+void MainComponent::open_console(const bool open)
+{
+    if (open) {
+        console = std::make_unique<Console>();
+    }
+    else {
+        console = nullptr;
+    }
+    logging = open;
+}
 std::pair<int, int> MainComponent::get_layout() const { return { tool_bar.get_layout().index(), tool_bar.get_num_panels() }; }
-float MainComponent::get_rendering_scale() const { return getRenderingScale(); }
 float MainComponent::get_sin_time() const { return sin_time; }
 float MainComponent::get_saw_time() const { return saw_time; }
 
@@ -119,7 +128,7 @@ void MainComponent::recompile_shaders()
 }
 void MainComponent::resize_panels(Rectangle<float>& bounds)
 {
-    std::visit(VariantVisitor{ 
+    std::visit(Overloader{ 
         [&](const ToolBar::LayoutType::Tiled& l) {
             const auto panels_per_side = static_cast<int>(std::sqrt(l.num_panels));
             const auto panel_width = bounds.proportionOfWidth(1.f / panels_per_side);
