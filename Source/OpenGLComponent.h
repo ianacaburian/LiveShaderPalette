@@ -130,8 +130,9 @@ public:
             eventTime       = mouseEvent.eventTime.toMilliseconds() % std::numeric_limits<int>::max();
             mouseDownTime   = mouseEvent.mouseDownTime.toMilliseconds() % std::numeric_limits<int>::max();
             
-            logMouseCall(mouseEvent, std::move(eventType));
-
+            if (child.isLogging()) {
+                logMouseCall(mouseEvent, std::move(eventType));
+            }
         }
         void logMouseCall(const MouseEvent& mouseEvent, MouseVariant&& eventType)
         {
@@ -225,6 +226,8 @@ public:
 //    int             getBottom() const                               { return bounds.getBottom(); }
 //    int             getWidth() const                                { return bounds.getWidth(); }
 //    int             getHeight() const                               { return bounds.getHeight(); }
+    void enableLogging(const bool enable) { logging = enable; }
+    bool isLogging() const { return logging; }
 
 private:
     //==============================================================================
@@ -232,7 +235,8 @@ private:
     MouseState mouseState{ *this };
 //    Rectangle<int> bounds{};
 //    String componentID{};
-    
+    bool logging{};
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenGLChildComponent)
 };
 
@@ -242,11 +246,60 @@ class OpenGLParentComponent : public Component, public OpenGLRenderer
 {
 public:
     //==============================================================================
-    explicit OpenGLParentComponent()
-    {
-    }
+    explicit OpenGLParentComponent() = default;
     ~OpenGLParentComponent() = default;
+protected:
+    //==============================================================================
+
+    virtual void newOpenGLContextCreatedParent() {}
+    virtual void renderOpenGLParent() {}
+    virtual void openGLContextClosingParent() {}
+    virtual float getRenderingScale() const = 0;
+    //==============================================================================
+
+    void addOpenGLComponent(OpenGLChildComponent* c) { addAndMakeVisible(*children.emplace_back(std::unique_ptr<OpenGLChildComponent>{ c })); }
+    OpenGLChildComponent* removeOpenGLComponent(int i) { return children.erase(children.begin() + i)->get(); }
+    void visitChildren(std::function<void(OpenGLChildComponent&)> f) { for (auto& c : children) f(*c); }
+    //    void setViewBounds(const Rectangle<float>& newViewBounds) { viewBounds = newViewBounds; }
+    OpenGLChildComponent* getOpenGLComponent(int i) const noexcept { return children[i].get(); }
+    std::size_t getNumOpenGLChildComponents() const { return children.size(); }
+
 private:
+    //==============================================================================
+    
+    std::vector<std::unique_ptr<OpenGLChildComponent>> children;
+
+    //==============================================================================
+
+    void newOpenGLContextCreated() override final
+    {
+        newOpenGLContextCreatedParent();
+        visitChildren([](auto& child) { child.newOpenGLContextCreated(); });
+    }
+    void renderOpenGL() override final
+    {
+        renderOpenGLParent();
+        
+        visitChildren([this](auto& child) {
+            clipDrawArea(child.getBounds());
+            child.renderOpenGL();
+        });
+    }
+    void openGLContextClosing() override final
+    {
+        visitChildren([](auto& child) { child.openGLContextClosing(); });
+        openGLContextClosingParent();
+    }
+    void clipDrawArea(const Rectangle<int>& area)
+    {
+        const auto renderingScale = getRenderingScale();
+        const auto x = area.getX() * renderingScale;
+        const auto y = (getHeight() - area.getBottom()) * renderingScale;
+        const auto w = area.getWidth() * renderingScale;
+        const auto h = area.getHeight() * renderingScale;
+        glViewport(x, y, w, h);
+        //        glScissor(x, y, w, h);
+    }
 };
 
 //==============================================================================
@@ -255,6 +308,7 @@ class OpenGLTopLevelComponent : public Component, public OpenGLRenderer
 {
 public:
     //==============================================================================
+    
     explicit OpenGLTopLevelComponent()
     {
         openGLContext.setOpenGLVersionRequired(juce::OpenGLContext::openGL3_2);
@@ -279,55 +333,51 @@ public:
 //    void mouseWheelMove(const MouseEvent& m, const MouseWheelDetails& w) override final { mouseCall(m, MouseType::WheelMove{ w }); }
 //    void mouseMagnify(const MouseEvent& m, float s) override final { mouseCall(m, MouseType::Magnify{ s }); }
     float getRenderingScale() const { return renderingScale; }
-    bool isLogging() const { return logging; }
+//    bool isLogging() const { return logging; }
     
 protected:
     //==============================================================================
 
     OpenGLContext openGLContext;
-    bool logging{};
+//    bool logging{};
     
     //==============================================================================
 
-    virtual void newOpenGLContextCreatedParent() {}
-    virtual void renderOpenGLParent() {}
-    virtual void openGLContextClosingParent() {}
+    virtual void newOpenGLContextCreatedTopLevel() {}
+    virtual void renderOpenGLTopLevel() {}
+    virtual void openGLContextClosingTopLevel() {}
     
     //==============================================================================
 
 //    void addOpenGLChildComponent(const std::shared_ptr<OpenGLChildComponent> c) { children.push_back(c); }
-    void addOpenGLChildComponent(OpenGLChildComponent* c)
-    {
-        addAndMakeVisible(*children.emplace_back(std::unique_ptr<OpenGLChildComponent>{ c }));
-        
-    }
-    OpenGLChildComponent* removeOpenGLChildComponent(int i) { return children.erase(children.begin() + i)->get(); }
+    void addOpenGLComponent(OpenGLChildComponent* c) { addAndMakeVisible(*children.emplace_back(std::unique_ptr<OpenGLChildComponent>{ c })); }
+    OpenGLChildComponent* removeOpenGLComponent(int i) { return children.erase(children.begin() + i)->get(); }
     void visitChildren(std::function<void(OpenGLChildComponent&)> f) { for (auto& c : children) f(*c); }
-    void setViewBounds(const Rectangle<float>& newViewBounds) { viewBounds = newViewBounds; }
-    OpenGLChildComponent* getOpenGLChildComponent(int i) const noexcept { return children[i].get(); }
+//    void setViewBounds(const Rectangle<float>& newViewBounds) { viewBounds = newViewBounds; }
+    OpenGLChildComponent* getOpenGLComponent(int i) const noexcept { return children[i].get(); }
     std::size_t getNumOpenGLChildComponents() const { return children.size(); }
     
 private:
     //==============================================================================
 
     std::vector<std::unique_ptr<OpenGLChildComponent>> children;
-    Rectangle<float> viewBounds{ 0.f, 0.5f };
+//    Rectangle<float> viewBounds{ 0.f, 0.5f };
     float renderingScale{};
     
     //==============================================================================
 
     void newOpenGLContextCreated() override final
     {
-        newOpenGLContextCreatedParent();
+        newOpenGLContextCreatedTopLevel();
         visitChildren([](auto& child) { child.newOpenGLContextCreated(); });
     }
     void renderOpenGL() override final
     {
         renderingScale = openGLContext.getRenderingScale();
 
-        glEnable(GL_SCISSOR_TEST); // This needs to be called here, and has no effect in the initialization function for some reason
+//        glEnable(GL_SCISSOR_TEST); // This needs to be called here, and has no effect in the initialization function for some reason
         
-        renderOpenGLParent();
+        renderOpenGLTopLevel();
         
         visitChildren([this](auto& child) {
             clipDrawArea(child.getBounds());
@@ -337,7 +387,7 @@ private:
     void openGLContextClosing() override final
     {
         visitChildren([](auto& child) { child.openGLContextClosing(); });
-        openGLContextClosingParent();
+        openGLContextClosingTopLevel();
     }
     void clipDrawArea(const Rectangle<int>& area)
     {

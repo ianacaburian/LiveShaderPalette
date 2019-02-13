@@ -28,7 +28,7 @@ MainComponent::MainComponent()
 }
 MainComponent::~MainComponent()
 {
-    console = nullptr;
+    open_console(false);
 }
 void MainComponent::resized()
 {
@@ -37,10 +37,10 @@ void MainComponent::resized()
     scroll_bar.setBounds(bounds.removeFromRight(proportionOfWidth(0.5f)).toNearestIntEdges());
     resize_panels(bounds);
 }
-void MainComponent::newOpenGLContextCreatedParent()
+void MainComponent::newOpenGLContextCreatedTopLevel()
 {
 }
-void MainComponent::renderOpenGLParent()
+void MainComponent::renderOpenGLTopLevel()
 {
     const auto time = Time::currentTimeMillis();
     const auto period_double = static_cast<double>(period.getValue());
@@ -87,7 +87,7 @@ void MainComponent::update_layout()
         }
         else {
             for (int i = delta_panels; ++i <= 0;) {
-                removeOpenGLChildComponent(initial_num_panels + delta_panels);
+                removeOpenGLComponent(initial_num_panels + delta_panels);
             }
         }
         resized();
@@ -97,7 +97,7 @@ void MainComponent::update_layout()
 void MainComponent::open_console(const bool open)
 {
     console = open ? std::make_unique<Console>(*this) : nullptr;
-    logging = open;
+    visitChildren([open](auto& child) { child.enableLogging(open); });
 }
 Point<int> MainComponent::get_panel_area_size() const { return panel_area_size; }
 Point<int> MainComponent::get_panel_size() const { return panel_size; }
@@ -107,6 +107,7 @@ Value& MainComponent::get_period_val() { return period; }
 float MainComponent::get_sin_time() const { return sin_time; }
 float MainComponent::get_saw_time() const { return saw_time; }
 bool MainComponent::is_live_compiling() const { return tool_bar.is_live_compiling(); }
+bool MainComponent::is_console_open() const { return console != nullptr; }
 
 //==============================================================================
 
@@ -129,7 +130,7 @@ MainComponent::Look::Look()
 void MainComponent::add_panels(const int initial_num_panels, const int num_panels_to_add)
 {
     for (int i = initial_num_panels; i != initial_num_panels + num_panels_to_add; ++i) {
-        addOpenGLChildComponent(new LiveShaderPanel{ *this, i });
+        addOpenGLComponent(new LiveShaderPanel{ *this, i });
     }
 }
 void MainComponent::recompile_shaders()
@@ -172,6 +173,6 @@ void MainComponent::resize_panels(Rectangle<float>& bounds)
         }
     }, tool_bar.get_layout());
     
-    const auto panel = getOpenGLChildComponent(0);
+    const auto panel = getOpenGLComponent(0);
     panel_size = { panel->getWidth(), panel->getHeight() };
 }

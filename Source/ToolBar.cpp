@@ -66,7 +66,7 @@ void ToolBar::InfoDisplay::log()
         MessageManager::callAsync([this]
         {
             repaint();
-            if (parent.isLogging()) {
+            if (parent.is_console_open()) {
                 auto strf1 = [](const float f) { return String::formatted("% .2f", f); };
                 auto strd = [](const int d) { return String{ d }.paddedLeft(' ', 4); };
                 const auto panel_size = parent.get_panel_size();

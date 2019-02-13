@@ -4,6 +4,9 @@
               cppLanguageStandard="17" defines="GL_SILENCE_DEPRECATION=1">
   <MAINGROUP id="Lpz2TT" name="LiveShaderPalette">
     <GROUP id="{39443426-EA8F-5615-5DF5-4B1B7C4B267B}" name="Source">
+      <FILE id="BCmRy1" name="PanelViewport.cpp" compile="1" resource="0"
+            file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/PanelViewport.cpp"/>
+      <FILE id="LkbQfE" name="PanelViewport.h" compile="0" resource="0" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/PanelViewport.h"/>
       <FILE id="M6ml3y" name="Console.cpp" compile="1" resource="0" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/Console.cpp"/>
       <FILE id="oN43b1" name="Console.h" compile="0" resource="0" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/Console.h"/>
       <FILE id="I1IgJe" name="ToolBar.cpp" compile="1" resource="0" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/ToolBar.cpp"/>

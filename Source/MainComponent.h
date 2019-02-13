@@ -24,8 +24,8 @@ public:
     explicit MainComponent();
     ~MainComponent();
     void resized() override;
-    void newOpenGLContextCreatedParent() override;
-    void renderOpenGLParent() override;
+    void newOpenGLContextCreatedTopLevel() override;
+    void renderOpenGLTopLevel() override;
     bool isInterestedInFileDrag (const StringArray& files) override;
     void filesDropped (const StringArray& files, int x, int y) override;
     void timerCallback() override;
@@ -42,6 +42,7 @@ public:
     float get_sin_time() const;
     float get_saw_time() const;
     bool is_live_compiling() const;
+    bool is_console_open() const;
     
     
 private:
