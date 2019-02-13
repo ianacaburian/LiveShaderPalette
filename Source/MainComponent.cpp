@@ -18,12 +18,23 @@ MainComponent::MainComponent()
 
     Desktop::getInstance().setDefaultLookAndFeel(&look);
     addAndMakeVisible(tool_bar);
-    setSize(screen_resolution.x, screen_resolution.y);
+    addAndMakeVisible(scroll_bar);
+    scroll_bar.setSliderStyle(Slider::SliderStyle::LinearBarVertical);
+    scroll_bar.setTextBoxIsEditable(true);
+    scroll_bar.setRange(500., 10000.);
+
+    period.setValue(1000);
+    setSize(400, 300);
+}
+MainComponent::~MainComponent()
+{
+    console = nullptr;
 }
 void MainComponent::resized()
 {
     auto bounds = getLocalBounds().toFloat();
     tool_bar.setBounds(bounds.removeFromTop(proportionOfHeight(0.05f)).toNearestIntEdges());
+    scroll_bar.setBounds(bounds.removeFromRight(proportionOfWidth(0.5f)).toNearestIntEdges());
     resize_panels(bounds);
 }
 void MainComponent::newOpenGLContextCreatedParent()
@@ -32,8 +43,9 @@ void MainComponent::newOpenGLContextCreatedParent()
 void MainComponent::renderOpenGLParent()
 {
     const auto time = Time::currentTimeMillis();
-    sin_time = static_cast<float>(std::sin(time / period));
-    saw_time = static_cast<float>(std::fmod(time, period) / period);
+    const auto period_double = static_cast<double>(period.getValue());
+    sin_time = static_cast<float>(std::sin(time / period_double));
+    saw_time = static_cast<float>(std::fmod(time, period_double) / period_double);
     tool_bar.log();
 }
 bool MainComponent::isInterestedInFileDrag(const StringArray& files) { return true; }
@@ -84,17 +96,17 @@ void MainComponent::update_layout()
 }
 void MainComponent::open_console(const bool open)
 {
-    if (open) {
-        console = std::make_unique<Console>();
-    }
-    else {
-        console = nullptr;
-    }
+    console = open ? std::make_unique<Console>(*this) : nullptr;
     logging = open;
 }
+Point<int> MainComponent::get_panel_area_size() const { return panel_area_size; }
+Point<int> MainComponent::get_panel_size() const { return panel_size; }
 std::pair<int, int> MainComponent::get_layout() const { return { tool_bar.get_layout().index(), tool_bar.get_num_panels() }; }
+Value& MainComponent::get_compile_rate_val() { return tool_bar.get_compile_rate_val(); }
+Value& MainComponent::get_period_val() { return period; }
 float MainComponent::get_sin_time() const { return sin_time; }
 float MainComponent::get_saw_time() const { return saw_time; }
+bool MainComponent::is_live_compiling() const { return tool_bar.is_live_compiling(); }
 
 //==============================================================================
 
@@ -106,6 +118,10 @@ MainComponent::Look::Look()
     setColour(TextButton::      textColourOffId,    Colours::grey);
     setColour(TextEditor::      backgroundColourId, Colours::black);
     setColour(TextEditor::      outlineColourId,    Colours::grey);
+    
+    
+    setColour(ScrollBar::thumbColourId, Colours::white);
+    setColour(ScrollBar::trackColourId, Colours::red);
 }
 
 // MainComponent::private: =====================================================
@@ -113,7 +129,7 @@ MainComponent::Look::Look()
 void MainComponent::add_panels(const int initial_num_panels, const int num_panels_to_add)
 {
     for (int i = initial_num_panels; i != initial_num_panels + num_panels_to_add; ++i) {
-        addOpenGLChildComponent(std::make_shared<LiveShaderPanel>(*this, i));
+        addOpenGLChildComponent(new LiveShaderPanel{ *this, i });
     }
 }
 void MainComponent::recompile_shaders()
@@ -128,6 +144,9 @@ void MainComponent::recompile_shaders()
 }
 void MainComponent::resize_panels(Rectangle<float>& bounds)
 {
+    const auto int_bounds = bounds.toNearestIntEdges();
+    panel_area_size = { int_bounds.getWidth(), int_bounds.getHeight() };
+    DBG("int_bounds: " << int_bounds.toString());
     std::visit(Overloader{ 
         [&](const ToolBar::LayoutType::Tiled& l) {
             const auto panels_per_side = static_cast<int>(std::sqrt(l.num_panels));
@@ -152,4 +171,7 @@ void MainComponent::resize_panels(Rectangle<float>& bounds)
             visitChildren([&](auto& child) { child.setBounds(bounds.removeFromLeft(panel_width).toNearestIntEdges()); });
         }
     }, tool_bar.get_layout());
+    
+    const auto panel = getOpenGLChildComponent(0);
+    panel_size = { panel->getWidth(), panel->getHeight() };
 }

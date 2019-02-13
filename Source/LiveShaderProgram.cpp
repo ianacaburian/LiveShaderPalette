@@ -67,7 +67,10 @@ LiveShaderProgram::LiveShader::LiveShader(const GLenum type, const GLchar* sourc
     if (const auto result = LiveShaderProgram::verify_operation_sucess(shader_ID, GL_COMPILE_STATUS);
         result.failed()) {
         
-        DBG(Time::getCurrentTime().formatted("%I:%M:%S") << " " << result.getErrorMessage());
+        const auto error_log_msg = String{ "s " } + Time::getCurrentTime().formatted("%H:%M:%S") + " " + result.getErrorMessage();
+        MessageManager::callAsync([error_log_msg]{
+            Logger::writeToLog(error_log_msg);
+        });
         const auto default_shader_source = create_default_shader_source(type);
         create_shader(default_shader_source.getCharPointer(),
                       sizeof(GLchar) * default_shader_source.length());
@@ -112,8 +115,9 @@ void LiveShaderProgram::Uniforms::create()
 }
 void LiveShaderProgram::Uniforms::send_uniforms()
 {
+    const auto panel_area_size = program.parent.get_panel_area_size();
     GL::glUniform4i(uf_screen_size, program.panel.getWidth(), program.panel.getHeight(),
-                    program.parent.getWidth(), program.parent.getHeight());
+                    panel_area_size.x, panel_area_size.y);
     GL::glUniform1f(uf_rendering_scale, program.parent.getRenderingScale());
     
     const auto mouse_state = program.panel.copyMouseState();

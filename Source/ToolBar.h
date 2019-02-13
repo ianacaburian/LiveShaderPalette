@@ -36,7 +36,11 @@ public:
 
     void log();
     Layout get_layout() const;
+    static Font mono_font(const float parent_height);
+    Value& get_compile_rate_val();
     int get_num_panels() const;
+    bool is_live_compiling() const;
+    
 
 private:
     //==============================================================================
@@ -58,7 +62,7 @@ private:
 
     MainComponent& parent;
     InfoDisplay info_display{ parent };
-    Layout layout{ LayoutType::Tiled{ 4 }};
+    Layout layout{ LayoutType::Tiled{ 1 }};
     Rectangle<int> toolbar_bounds;
     TextEditor num_panels_txt;
     TextButton
@@ -67,13 +71,12 @@ private:
     rows_btn            { "Rows" },
     columns_btn         { "Columns" },
     console_btn         { "Console" };
-    static constexpr int compile_interval_ms = 2000;
+    Value compile_rate_val;
 
     //==============================================================================
 
     void initialize_layout_buttons();
     void set_component_callbacks();
-    static Font mono_font(const float parent_height);
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ToolBar)
 };

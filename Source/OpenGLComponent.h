@@ -108,7 +108,7 @@ template<class... Ts> Overloader(Ts...) -> Overloader<Ts...>;
 
 //==============================================================================
 
-class OpenGLChildComponent : public MouseListener, public OpenGLRenderer
+class OpenGLChildComponent : public Component, public OpenGLRenderer
 {
 public:
     //==============================================================================
@@ -117,9 +117,11 @@ public:
     {
         MouseVariant lastEventType{ MouseType::Up{} };
         Point<float> mousePosition{}, mouseDownPosition{};
+        OpenGLChildComponent& child;
         int eventTime{}, mouseDownTime{};
         bool isDown{}, isRightClick{}, isToggled{};
         
+        MouseState(OpenGLChildComponent& child) : child{ child } {}
         void captureEvent(const MouseEvent& mouseEvent, MouseVariant&& eventType)
         {
             lastEventType = eventType;
@@ -127,6 +129,43 @@ public:
             mouseDownPosition = mouseEvent.mouseDownPosition;
             eventTime       = mouseEvent.eventTime.toMilliseconds() % std::numeric_limits<int>::max();
             mouseDownTime   = mouseEvent.mouseDownTime.toMilliseconds() % std::numeric_limits<int>::max();
+            
+            logMouseCall(mouseEvent, std::move(eventType));
+
+        }
+        void logMouseCall(const MouseEvent& mouseEvent, MouseVariant&& eventType)
+        {
+            auto strf = [](const float f) { return String::formatted("% .2f", f).paddedLeft(' ', 8); };
+            auto strf1 = [](const float f) { return String::formatted("% .2f", f); };
+            auto s = String{ "m " };
+            s <<   "      componentID: " << child.getComponentID()
+              << "\n    mousePosition:"  << strf(mousePosition.x) << " "
+                                         << strf(mousePosition.y)
+              << "\nmouseDownPosition:"  << strf(mouseDownPosition.x) << " "
+                                         << strf(mouseDownPosition.y)
+              << "\n           isDown? " << (isDown ? "DOWN" : "UP  ")
+              << "\n     isRightClick? " << (isRightClick ? "RIGHT" : "LEFT ")
+              << "\n        isToggled? " << (isToggled ? "ON " : "OFF")
+              << "\n    mouseDownTime: " << mouseDownTime
+              << "\n        eventTime: " << eventTime << " |"
+              << " Type: ";
+            std::visit(Overloader{
+                [&s](const MouseType::Move&)        { s << "Move"; },
+                [&s](const MouseType::Enter&)       { s << "Enter"; },
+                [&s](const MouseType::Exit&)        { s << "Exit"; },
+                [&s](const MouseType::Down&)        { s << "Down"; },
+                [&s](const MouseType::Drag&)        { s << "Drag"; },
+                [&s](const MouseType::Up&)          { s << "Up"; },
+                [&s](const MouseType::DoubleClick&) { s << "DoubleClick"; },
+                [&s, &strf1](const MouseType::WheelMove& m) {
+                    s << "WheelMove.delta:" << strf1(m.wheel.deltaX) << " "
+                                            << strf1(m.wheel.deltaY);
+                },
+                [&s, &strf1](const MouseType::Magnify& m) {
+                    s << "Magnify.scaleFactor:" << strf1(m.scaleFactor);
+                }
+            }, eventType);
+            Logger::writeToLog(s);
         }
     };
 
@@ -148,10 +187,10 @@ public:
     }
     void mouseDown(const MouseEvent& mouseEvent) override
     {
-        mouseState.captureEvent(mouseEvent, MouseType::Down{});
         mouseState.isToggled = ! mouseState.isToggled;
         mouseState.isDown = true;
         mouseState.isRightClick = mouseEvent.mods.isRightButtonDown();
+        mouseState.captureEvent(mouseEvent, MouseType::Down{});
     }
     void mouseDrag(const MouseEvent& mouseEvent) override
     {
@@ -159,8 +198,8 @@ public:
     }
     void mouseUp(const MouseEvent& mouseEvent) override
     {
-        mouseState.captureEvent(mouseEvent, MouseType::Up{});
         mouseState.isDown = false;
+        mouseState.captureEvent(mouseEvent, MouseType::Up{});
     }
     void mouseDoubleClick(const MouseEvent& mouseEvent) override
     {
@@ -177,22 +216,22 @@ public:
 
     //==============================================================================
 
-    void            setComponentID(const String& newID)             { componentID = newID; }
-    void            setBounds(const Rectangle<int>& new_bounds)     { bounds = new_bounds; }
+//    void            setComponentID(const String& newID)             { componentID = newID; }
+//    void            setBounds(const Rectangle<int>& new_bounds)     { bounds = new_bounds; }
     MouseState      copyMouseState() const                          { return mouseState; }
-    const String&   getComponentID() const                          { return componentID; }
-    Rectangle<int>  getBounds() const                               { return bounds; }
-    int             getX() const                                    { return bounds.getX(); }
-    int             getBottom() const                               { return bounds.getBottom(); }
-    int             getWidth() const                                { return bounds.getWidth(); }
-    int             getHeight() const                               { return bounds.getHeight(); }
+//    const String&   getComponentID() const                          { return componentID; }
+//    Rectangle<int>  getBounds() const                               { return bounds; }
+//    int             getX() const                                    { return bounds.getX(); }
+//    int             getBottom() const                               { return bounds.getBottom(); }
+//    int             getWidth() const                                { return bounds.getWidth(); }
+//    int             getHeight() const                               { return bounds.getHeight(); }
 
 private:
     //==============================================================================
     
-    MouseState mouseState{};
-    String componentID{};
-    Rectangle<int> bounds{};
+    MouseState mouseState{ *this };
+//    Rectangle<int> bounds{};
+//    String componentID{};
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenGLChildComponent)
 };
@@ -205,6 +244,19 @@ public:
     //==============================================================================
     explicit OpenGLParentComponent()
     {
+    }
+    ~OpenGLParentComponent() = default;
+private:
+};
+
+//==============================================================================
+
+class OpenGLTopLevelComponent : public Component, public OpenGLRenderer
+{
+public:
+    //==============================================================================
+    explicit OpenGLTopLevelComponent()
+    {
         openGLContext.setOpenGLVersionRequired(juce::OpenGLContext::openGL3_2);
         openGLContext.setContinuousRepainting(true);
         openGLContext.setComponentPaintingEnabled(true);
@@ -212,20 +264,20 @@ public:
         openGLContext.setRenderer(this);
         openGLContext.attachTo(*this);        
     }
-    ~OpenGLParentComponent()
+    ~OpenGLTopLevelComponent()
     {
         openGLContext.detach();
         openGLContext.setRenderer(nullptr);
     }
-    void mouseMove(const MouseEvent& m) override final { mouseCall(m, MouseType::Move{}); }
-    void mouseEnter(const MouseEvent& m) override final { mouseCall(m, MouseType::Enter{}); }
-    void mouseExit(const MouseEvent& m) override final { mouseCall(m, MouseType::Exit{}); }
-    void mouseDown(const MouseEvent& m) override final { mouseCall(m, MouseType::Down{}); }
-    void mouseDrag(const MouseEvent& m) override final { mouseCall(m, MouseType::Drag{}); }
-    void mouseUp(const MouseEvent& m) override final { mouseCall(m, MouseType::Up{}); }
-    void mouseDoubleClick(const MouseEvent& m) override final { mouseCall(m, MouseType::DoubleClick{}); }
-    void mouseWheelMove(const MouseEvent& m, const MouseWheelDetails& w) override final { mouseCall(m, MouseType::WheelMove{ w }); }
-    void mouseMagnify(const MouseEvent& m, float s) override final { mouseCall(m, MouseType::Magnify{ s }); }
+//    void mouseMove(const MouseEvent& m) override final { mouseCall(m, MouseType::Move{}); }
+//    void mouseEnter(const MouseEvent& m) override final { mouseCall(m, MouseType::Enter{}); }
+//    void mouseExit(const MouseEvent& m) override final { mouseCall(m, MouseType::Exit{}); }
+//    void mouseDown(const MouseEvent& m) override final { mouseCall(m, MouseType::Down{}); }
+//    void mouseDrag(const MouseEvent& m) override final { mouseCall(m, MouseType::Drag{}); }
+//    void mouseUp(const MouseEvent& m) override final { mouseCall(m, MouseType::Up{}); }
+//    void mouseDoubleClick(const MouseEvent& m) override final { mouseCall(m, MouseType::DoubleClick{}); }
+//    void mouseWheelMove(const MouseEvent& m, const MouseWheelDetails& w) override final { mouseCall(m, MouseType::WheelMove{ w }); }
+//    void mouseMagnify(const MouseEvent& m, float s) override final { mouseCall(m, MouseType::Magnify{ s }); }
     float getRenderingScale() const { return renderingScale; }
     bool isLogging() const { return logging; }
     
@@ -243,27 +295,23 @@ protected:
     
     //==============================================================================
 
-    void addOpenGLChildComponent(const std::shared_ptr<OpenGLChildComponent> new_child)
+//    void addOpenGLChildComponent(const std::shared_ptr<OpenGLChildComponent> c) { children.push_back(c); }
+    void addOpenGLChildComponent(OpenGLChildComponent* c)
     {
-        children.push_back(new_child);
+        addAndMakeVisible(*children.emplace_back(std::unique_ptr<OpenGLChildComponent>{ c }));
+        
     }
-    OpenGLChildComponent* removeOpenGLChildComponent(int childIndexToRemove)
-    {
-        return children.erase(children.begin() + childIndexToRemove)->get();
-    }
-    void visitChildren(std::function<void(OpenGLChildComponent&)> f)
-    {
-        for (auto& child : children) {
-            f(*child);
-        }
-    }
+    OpenGLChildComponent* removeOpenGLChildComponent(int i) { return children.erase(children.begin() + i)->get(); }
+    void visitChildren(std::function<void(OpenGLChildComponent&)> f) { for (auto& c : children) f(*c); }
+    void setViewBounds(const Rectangle<float>& newViewBounds) { viewBounds = newViewBounds; }
+    OpenGLChildComponent* getOpenGLChildComponent(int i) const noexcept { return children[i].get(); }
     std::size_t getNumOpenGLChildComponents() const { return children.size(); }
     
 private:
     //==============================================================================
 
-    std::vector<std::shared_ptr<OpenGLChildComponent>> children;
-    MemoryOutputStream memoryOutputStream;
+    std::vector<std::unique_ptr<OpenGLChildComponent>> children;
+    Rectangle<float> viewBounds{ 0.f, 0.5f };
     float renderingScale{};
     
     //==============================================================================
@@ -298,74 +346,73 @@ private:
         const auto w = area.getWidth() * renderingScale;
         const auto h = area.getHeight() * renderingScale;
         glViewport(x, y, w, h);
-        glScissor(x, y, w, h);
+//        glScissor(x, y, w, h);
     }
-    void mouseCall(const MouseEvent& mouseEvent, MouseVariant&& mouseVariant)
-    {
-        for (auto& child : children) {
-            if (const auto childBounds = child->getBounds().toFloat();
-                childBounds.contains(mouseEvent.mouseDownPosition)) {
-                
-                const auto childEvent = mouseEvent.withNewPosition(Point<float>{
-                    mouseEvent.position.x - childBounds.getX(),
-                    mouseEvent.position.y - childBounds.getY()
-                });
-                std::visit(Overloader{
-                    [&child, &childEvent](const MouseType::Move&) { child->mouseMove(childEvent); },
-                    [&child, &childEvent](const MouseType::Enter&) { child->mouseEnter(childEvent); },
-                    [&child, &childEvent](const MouseType::Exit&) { child->mouseExit(childEvent); },
-                    [&child, &childEvent](const MouseType::Down&) { child->mouseDown(childEvent); },
-                    [&child, &childEvent](const MouseType::Drag&) { child->mouseDrag(childEvent); },
-                    [&child, &childEvent](const MouseType::Up&) { child->mouseUp(childEvent); },
-                    [&child, &childEvent](const MouseType::DoubleClick&) { child->mouseDoubleClick(childEvent); },
-                    [&child, &childEvent](const MouseType::WheelMove& m) { child->mouseWheelMove(childEvent, m.wheel); },
-                    [&child, &childEvent](const MouseType::Magnify& m) { child->mouseMagnify(childEvent, m.scaleFactor); }
-                }, mouseVariant);
-                
-                if (logging) {
-                    logMouseCall(*child, childEvent, std::move(mouseVariant));
-                }
-                return;
-            }
-        }
-    }
-    void logMouseCall(const OpenGLChildComponent& child, const MouseEvent& mouseEvent, MouseVariant&& eventType)
-    {
-        const auto mouseState = child.copyMouseState();
-        auto strf = [](const float f) { return String::formatted("% .2f", f).paddedLeft(' ', 8); };
-        auto s = String{ "m" }, options = String{};
-        s << " Component ID: " << child.getComponentID()
-          << "\nPosition: (" << strf(mouseState.mousePosition.x) << ","
-          << strf(mouseState.mousePosition.y) << " ) |"
-          << " Mouse Down Position: (" << strf(mouseState.mouseDownPosition.x) << ","
-          << strf(mouseState.mouseDownPosition.y) << " )"
-          << "\nMouse is: " << (mouseState.isDown ? "DOWN" : "UP  ") << " |"
-          << " Button: " << (mouseState.isRightClick ? "RIGHT" : "LEFT ") << " |"
-          << " Toggle: " << (mouseState.isToggled ? "ON " : "OFF") << "\nType: ";
-        
-        std::visit(Overloader{
-            [&s](const MouseType::Move&) { s << "Move"; },
-            [&s](const MouseType::Enter&) { s << "Enter"; },
-            [&s](const MouseType::Exit&) { s << "Exit"; },
-            [&s](const MouseType::Down&) { s << "Down"; },
-            [&s](const MouseType::Drag&) { s << "Drag"; },
-            [&s](const MouseType::Up&) { s << "Up"; },
-            [&s](const MouseType::DoubleClick&) { s << "DoubleClick"; },
-            [&s, &options, &strf](const MouseType::WheelMove& m) {
-                s << "WheelMove";
-                options << " Delta: ( " << strf(m.wheel.deltaX) << "," << strf(m.wheel.deltaY) << " )";
-            },
-            [&s, &options, &strf](const MouseType::Magnify& m) {
-                s << "Magnify";
-                options << " Scale Factor:" << strf(m.scaleFactor);
-            }
-        }, eventType);
-        
-        s << " | Event Time: " << mouseState.eventTime << " |"
-          << " Mouse Down Time: " << mouseState.mouseDownTime << " |"
-          << options;
-
-        Logger::writeToLog(s);
-    }
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenGLParentComponent)
+//    void mouseCall(const MouseEvent& mouseEvent, MouseVariant&& mouseVariant)
+//    {
+//        for (auto& child : children) {
+//            if (const auto childBounds = child->getBounds().toFloat();
+//                childBounds.contains(mouseEvent.mouseDownPosition)) {
+//
+//                const auto childEvent = mouseEvent.withNewPosition(Point<float>{
+//                    mouseEvent.position.x - childBounds.getX(),
+//                    mouseEvent.position.y - childBounds.getY()
+//                });
+//                std::visit(Overloader{
+//                    [&child, &childEvent](const MouseType::Move&) { child->mouseMove(childEvent); },
+//                    [&child, &childEvent](const MouseType::Enter&) { child->mouseEnter(childEvent); },
+//                    [&child, &childEvent](const MouseType::Exit&) { child->mouseExit(childEvent); },
+//                    [&child, &childEvent](const MouseType::Down&) { child->mouseDown(childEvent); },
+//                    [&child, &childEvent](const MouseType::Drag&) { child->mouseDrag(childEvent); },
+//                    [&child, &childEvent](const MouseType::Up&) { child->mouseUp(childEvent); },
+//                    [&child, &childEvent](const MouseType::DoubleClick&) { child->mouseDoubleClick(childEvent); },
+//                    [&child, &childEvent](const MouseType::WheelMove& m) { child->mouseWheelMove(childEvent, m.wheel); },
+//                    [&child, &childEvent](const MouseType::Magnify& m) { child->mouseMagnify(childEvent, m.scaleFactor); }
+//                }, mouseVariant);
+//#if JUCE_DEBUG
+//                if (logging) {
+//                    logMouseCall(*child, childEvent, std::move(mouseVariant));
+//                }
+//#endif
+//                return;
+//            }
+//        }
+//    }
+//    void logMouseCall(const OpenGLChildComponent& child, const MouseEvent& mouseEvent, MouseVariant&& eventType)
+//    {
+//        const auto mouseState = child.copyMouseState();
+//        auto strf = [](const float f) { return String::formatted("% .2f", f).paddedLeft(' ', 8); };
+//        auto strf1 = [](const float f) { return String::formatted("% .2f", f); };
+//        auto s = String{ "m " };
+//        s << "      componentID: " << child.getComponentID()
+//          << "\n    mousePosition:" << strf(mouseState.mousePosition.x) << " "
+//          << strf(mouseState.mousePosition.y)
+//          << "\nmouseDownPosition:" << strf(mouseState.mouseDownPosition.x) << " "
+//          << strf(mouseState.mouseDownPosition.y)
+//          << "\n           isDown? " << (mouseState.isDown ? "DOWN" : "UP  ")
+//          << "\n     isRightClick? " << (mouseState.isRightClick ? "RIGHT" : "LEFT ")
+//          << "\n        isToggled? " << (mouseState.isToggled ? "ON " : "OFF")
+//          << "\n    mouseDownTime: " << mouseState.mouseDownTime
+//          << "\n        eventTime: " << mouseState.eventTime << " |"
+//          << " Type: ";
+//
+//        std::visit(Overloader{
+//            [&s](const MouseType::Move&) { s << "Move"; },
+//            [&s](const MouseType::Enter&) { s << "Enter"; },
+//            [&s](const MouseType::Exit&) { s << "Exit"; },
+//            [&s](const MouseType::Down&) { s << "Down"; },
+//            [&s](const MouseType::Drag&) { s << "Drag"; },
+//            [&s](const MouseType::Up&) { s << "Up"; },
+//            [&s](const MouseType::DoubleClick&) { s << "DoubleClick"; },
+//            [&s, &strf1](const MouseType::WheelMove& m) {
+//                s << "WheelMove.delta:" << strf1(m.wheel.deltaX) << " " << strf1(m.wheel.deltaY);
+//            },
+//            [&s, &strf1](const MouseType::Magnify& m) {
+//                s << "Magnify.scaleFactor:" << strf1(m.scaleFactor);
+//            }
+//        }, eventType);
+//
+//        Logger::writeToLog(s);
+//    }
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenGLTopLevelComponent)
 };

@@ -17,12 +17,12 @@ class Console;
     This component lives inside our window, and this is where you should put all
     your controls and content.
 */
-class MainComponent   : public OpenGLParentComponent, public FileDragAndDropTarget, public Timer
+class MainComponent   : public OpenGLTopLevelComponent, public FileDragAndDropTarget, public Timer
 {
 public:
     //==============================================================================
     explicit MainComponent();
-    ~MainComponent() = default;
+    ~MainComponent();
     void resized() override;
     void newOpenGLContextCreatedParent() override;
     void renderOpenGLParent() override;
@@ -34,9 +34,14 @@ public:
 
     void update_layout();
     void open_console(const bool open);
+    Point<int> get_panel_area_size() const;
+    Point<int> get_panel_size() const;
     std::pair<int, int> get_layout() const;
+    Value& get_compile_rate_val();
+    Value& get_period_val();
     float get_sin_time() const;
     float get_saw_time() const;
+    bool is_live_compiling() const;
     
     
 private:
@@ -47,11 +52,12 @@ private:
     //==============================================================================
     
     ToolBar tool_bar{ *this };
+    Slider scroll_bar;
     std::unique_ptr<Console> console;
     Look look;
-    Point<int> screen_resolution { 400, 300 };
+    Point<int> panel_area_size{}, panel_size{};
     float sin_time{}, saw_time;
-    int period = 1000;
+    Value period;
     
     //==============================================================================
 

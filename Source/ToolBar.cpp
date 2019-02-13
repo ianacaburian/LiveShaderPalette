@@ -24,6 +24,7 @@ ToolBar::ToolBar(MainComponent& parent) : parent{ parent }
 
     initialize_layout_buttons();
     set_component_callbacks();
+    compile_rate_val.setValue(1000);
     //    live_compile.triggerClick();
 }
 void ToolBar::resized()
@@ -43,7 +44,9 @@ void ToolBar::resized()
 
 void ToolBar::log() { info_display.log(); }
 ToolBar::Layout ToolBar::get_layout() const { return layout; }
+Value& ToolBar::get_compile_rate_val() { return compile_rate_val; }
 int ToolBar::get_num_panels() const { return std::visit([this](const auto& l){ return l.num_panels; }, layout); }
+bool ToolBar::is_live_compiling() const { return live_compile_btn.getToggleState(); }
 
 // ToolBar::InfoDisplay ========================================================
 
@@ -64,12 +67,16 @@ void ToolBar::InfoDisplay::log()
         {
             repaint();
             if (parent.isLogging()) {
-                auto s = String{ "p" };
-                s << " Screen size: ( " << parent.getWidth() << ", " << parent.getHeight() << " )"
-                  << "" // TODO: add panel size here
-                  << " Rendering scale: " << parent.getRenderingScale() << " |"
-                  << "\nSin time: " << parent.get_sin_time() << " |"
-                  << " Saw time: " << parent.get_saw_time();
+                auto strf1 = [](const float f) { return String::formatted("% .2f", f); };
+                auto strd = [](const int d) { return String{ d }.paddedLeft(' ', 4); };
+                const auto panel_size = parent.get_panel_size();
+                const auto panel_area_size = parent.get_panel_area_size();
+                auto s = String{ "p " };
+                s << "OpenGLContext::getRenderingScale(): " << parent.getRenderingScale()
+                  << "\n   Panel:  " << strd(panel_size.x) << " " << strd(panel_size.y)
+                  << "\n  Screen:  " << strd(panel_area_size.x) << " " << strd(panel_area_size.y)
+                  << "\nSin time: " << strf1(parent.get_sin_time())
+                  << "\nSaw time: " << strf1(parent.get_saw_time());
                 Logger::writeToLog(s);
             }
         });
@@ -125,7 +132,7 @@ void ToolBar::set_component_callbacks()
 {
     live_compile_btn.onClick = [this] {
         if (live_compile_btn.getToggleState()) {
-            parent.startTimer(compile_interval_ms);
+            parent.startTimer(compile_rate_val.getValue());
         }
         else {
             parent.stopTimer();
