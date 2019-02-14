@@ -51,7 +51,7 @@ private:
     {
         GLint
         uf_componentID_layout,
-        uf_screen_size,
+        uf_resolution,
         uf_rendering_scale,
         uf_mouse_type,
         uf_mouse_position,

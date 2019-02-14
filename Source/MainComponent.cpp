@@ -48,6 +48,12 @@ void MainComponent::renderOpenGLParent()
 bool MainComponent::isInterestedInFileDrag(const StringArray& files) { return true; }
 void MainComponent::filesDropped(const StringArray& files, int x, int y)
 {
+    if (tool_bar.getBounds().contains(x, y)) {
+        openGLContext.detach();
+        visit_panels([&](auto& panel) { panel.load_shader_file(files[0]); });
+        openGLContext.attachTo(*this);
+        return;
+    }
     visit_panels([&](auto& panel) {
         if (const auto panel_bounds = panel.getBounds();
             panel_bounds.contains(x, y)) {
@@ -58,10 +64,6 @@ void MainComponent::filesDropped(const StringArray& files, int x, int y)
             return;
         }
     });
-    // If dragged in a non-panel area, load the same file into all panels.
-    openGLContext.detach();
-    visit_panels([&](auto& panel) { panel.load_shader_file(files[0]); });
-    openGLContext.attachTo(*this);
 }
 void MainComponent::timerCallback() { recompile_shaders(); }
 

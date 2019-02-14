@@ -114,7 +114,7 @@ void LiveShaderProgram::Uniforms::create()
                     program.panel.getComponentID().getIntValue(),
                     layout.first, layout.second, 0);
     
-    uf_screen_size          = get_uniform_location("uf_panel_size");
+    uf_resolution           = get_uniform_location("uf_resolution");
     uf_rendering_scale      = get_uniform_location("uf_rendering_scale");
     uf_mouse_type           = get_uniform_location("uf_mouse_type");
     uf_mouse_position       = get_uniform_location("uf_mouse_position");
@@ -125,12 +125,16 @@ void LiveShaderProgram::Uniforms::create()
 }
 void LiveShaderProgram::Uniforms::send_uniforms()
 {
+    const auto panel_size = program.parent.get_panel_size();
     const auto panel_area_size = program.parent.get_panel_area_size();
     const auto mouse_state = program.panel.copyMouseState();
     const auto mouse_options = mouse_options_to_float(mouse_state.lastEventType);
     
-    GL::glUniform4i(uf_screen_size,         program.panel.getWidth(), program.panel.getHeight(),
+    GL::glUniform4i(uf_resolution,          panel_size.x, panel_size.y,
                                             panel_area_size.x, panel_area_size.y);
+    
+//    DBG("panel_size: " << panel_size.toString() << " panel_area_size: " << panel_area_size.toString());
+    
     GL::glUniform1f(uf_rendering_scale,     program.parent.getRenderingScale());
     GL::glUniform1i(uf_mouse_type,          static_cast<int>(mouse_state.lastEventType.index()));
     GL::glUniform4f(uf_mouse_position,      mouse_state.mousePosition.x, mouse_state.mousePosition.y,
