@@ -33,6 +33,7 @@ public:
 
     //==============================================================================
 
+    void initialize_fragment_file();
     void update_layout();
     void open_console(const bool open);
     Point<int> get_panel_area_size() const;

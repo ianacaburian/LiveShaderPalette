@@ -14,7 +14,8 @@
 
 //==============================================================================
 
-LiveShaderProgram::LiveShaderProgram(MainComponent& parent, LiveShaderPanel& panel, const File& fragment_file)
+LiveShaderProgram::LiveShaderProgram(MainComponent& parent, LiveShaderPanel& panel,
+                                     const File& fragment_file)
 : fragment_shader_source{ fragment_file.loadFileAsString() }
 , parent{ parent }
 , panel{ panel }
@@ -26,19 +27,15 @@ LiveShaderProgram::LiveShaderProgram(MainComponent& parent, LiveShaderPanel& pan
 void LiveShaderProgram::create()
 {
     shader_prog_ID = GL::glCreateProgram();
-    const auto default_vertex_source = LiveShader::create_default_shader_source(GL_VERTEX_SHADER);
-    auto vertex_shader =    LiveShader{ GL_VERTEX_SHADER, default_vertex_source.getCharPointer(),
-                                        static_cast<GLint>(sizeof(GLchar) * default_vertex_source.length()),
-                                        shader_prog_ID };
-    auto fragment_shader =  LiveShader{ GL_FRAGMENT_SHADER, fragment_shader_source.getCharPointer(),
-                                        static_cast<GLint>(sizeof(GLchar) * fragment_shader_source.length()),
-                                        shader_prog_ID };
+    auto vertex_shader      = LiveShader{ GL_VERTEX_SHADER, nullptr, 0, shader_prog_ID };
+    auto fragment_shader    = LiveShader{ GL_FRAGMENT_SHADER, fragment_shader_source.getCharPointer(),
+                                          static_cast<GLint>(sizeof(GLchar) * fragment_shader_source.length()),
+                                          shader_prog_ID };
     GL::glLinkProgram(shader_prog_ID);
     
     if (const auto result = verify_operation_sucess(shader_prog_ID, GL_LINK_STATUS);
         result.failed()) {
-
-        DBG(result.getErrorMessage());
+        DBG("GL_LINK_STATUS: " << result.getErrorMessage());
         jassertfalse;
     }
     use();
@@ -58,22 +55,16 @@ LiveShaderProgram::LiveShader::LiveShader(const GLenum type, const GLchar* sourc
                                           const GLint source_length, const GLuint shader_prog_ID)
 : shader_ID{ GL::glCreateShader(type) }
 {
-    auto create_shader = [this, type](const GLchar* source, const GLint source_length) {
-        GL::glShaderSource(shader_ID, 1, &source, &source_length);
-        GL::glCompileShader(shader_ID);
-    };
-    create_shader(source, source_length);
+    create_shader(type, source, source_length);
 
     if (const auto result = LiveShaderProgram::verify_operation_sucess(shader_ID, GL_COMPILE_STATUS);
         result.failed()) {
         
-        const auto error_log_msg = String{ "s " } + Time::getCurrentTime().formatted("%H:%M:%S") + " " + result.getErrorMessage();
-        MessageManager::callAsync([error_log_msg]{
-            Logger::writeToLog(error_log_msg);
+        const auto timestamp = Time::getCurrentTime();
+        MessageManager::callAsync([result, timestamp]{
+            Logger::writeToLog(String{ "s " } + timestamp.formatted("%H:%M:%S") + " " + result.getErrorMessage());
         });
-        const auto default_shader_source = create_default_shader_source(type);
-        create_shader(default_shader_source.getCharPointer(),
-                      sizeof(GLchar) * default_shader_source.length());
+        create_shader(type, nullptr, 0);
     }
     GL::glAttachShader(shader_prog_ID, shader_ID);
 }
@@ -81,14 +72,33 @@ LiveShaderProgram::LiveShader::~LiveShader()
 {
     GL::glDeleteShader(shader_ID);
 }
-String LiveShaderProgram::LiveShader::create_default_shader_source(const GLenum type)
+void LiveShaderProgram::LiveShader::create_shader(const GLenum type, const GLchar* source, const GLint source_length)
 {
-    auto s = String{ "#version 150\n" };
-    s << (type == GL_VERTEX_SHADER ? "in vec4 position" : "out vec4 color")
-      << ";\nvoid main()\n{\n"
-      << (type == GL_VERTEX_SHADER ? "gl_Position = position" : "color = vec4(.0, .0, .5, 1.)")
-      << ";\n}\n";
-    return s;
+    auto compile_shader = [this, type](const GLchar* source, const GLint source_length) {
+        GL::glShaderSource(shader_ID, 1, &source, &source_length);
+        GL::glCompileShader(shader_ID);
+    };
+    if (source_length) {
+        compile_shader(source, source_length);
+    }
+    else {
+        const auto hard_code = [type] {
+            auto str = String{ "#version 150\n" };
+            if (type == GL_VERTEX_SHADER) {
+                str << "in vec4 position;\nvoid main()\n{\ngl_Position=position;\n}\n";
+            }
+            else {
+                str << "out vec4 out_color;\nvoid main()\n{\n"
+                    << "float result=0.;\nif(-1.<=gl_PointCoord.y&&gl_PointCoord.y<-0.95\n"
+                    << "||0.95<=gl_PointCoord.y&&gl_PointCoord.y<1.\n"
+                    << "||-1.<=gl_PointCoord.x&&gl_PointCoord.x<-0.95\n"
+                    << "||0.95<=gl_PointCoord.x&&gl_PointCoord.x<1.){\n"
+                    << "result=1.;\n}\nout_color=vec4(result,result,result,1.);\n}\n";
+            }
+            return str;
+        }();
+        compile_shader(hard_code.getCharPointer(), sizeof(GLchar) * hard_code.length());
+    }
 }
 
 //==============================================================================
@@ -152,9 +162,8 @@ Point<float> LiveShaderProgram::Uniforms::mouse_options_to_float(const MouseVari
 Result LiveShaderProgram::verify_operation_sucess(GLuint object_id, const GLenum type)
 {
     GLint success;
-    (type == GL_COMPILE_STATUS ? GL::glGetShaderiv : GL::glGetProgramiv)
-        (object_id, type, &success);
-    if (! success) {    // TODO: create and print to a separate console window
+    if ((type == GL_COMPILE_STATUS ? GL::glGetShaderiv : GL::glGetProgramiv)(object_id, type, &success);
+        ! success) {
         GLint length;
         glGetShaderiv(object_id, GL_INFO_LOG_LENGTH, &length);
         (type == GL_COMPILE_STATUS ? GL::glGetShaderiv : GL::glGetProgramiv)

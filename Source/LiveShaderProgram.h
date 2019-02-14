@@ -41,7 +41,8 @@ private:
         
         LiveShader(const GLenum type, const GLchar* source, const GLint source_length, const GLuint shader_prog_ID);
         ~LiveShader();
-        static String create_default_shader_source(const GLenum type);
+        void create_shader(const GLenum type, const GLchar* source, const GLint source_length);
+//        static String create_default_shader_source(const GLenum type);
     };
     
     //==============================================================================

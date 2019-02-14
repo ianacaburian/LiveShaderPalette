@@ -62,7 +62,7 @@ private:
 
     MainComponent& parent;
     InfoDisplay info_display{ parent };
-    Layout layout{ LayoutType::Tiled{ 1 }};
+    Layout layout{ LayoutType::Rows{ 1 }};
     Rectangle<int> toolbar_bounds;
     TextEditor num_panels_txt;
     TextButton

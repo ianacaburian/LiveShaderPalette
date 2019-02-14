@@ -37,20 +37,8 @@ public:
 private:
     //==============================================================================
     
-    class FragmentShaderFile
-    {
-    public:
-        FragmentShaderFile(const char* fragment_filename);
-        ~FragmentShaderFile() = default;
-        
-        void load_shader_file(const String& file_path);
-        File get_fragment_file() const;
-    private:
-        File fragment_file{};
-    };
-    
     OpenGLRectangle rectangle;
-    FragmentShaderFile serialization{ "Frag.frag" };
+    File fragment_file{};
     std::unique_ptr<LiveShaderProgram> live_shader_program;
     MainComponent& parent;
    

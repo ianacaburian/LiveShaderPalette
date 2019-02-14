@@ -10,9 +10,6 @@
       <FILE id="hGJsfy" name="ToolBar.h" compile="0" resource="0" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/ToolBar.h"/>
       <FILE id="DIq1G4" name="LiveShaderProgram.cpp" compile="1" resource="0"
             file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/LiveShaderProgram.cpp"/>
-      <FILE id="VpoADj" name="Serialization.cpp" compile="1" resource="0"
-            file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/Serialization.cpp"/>
-      <FILE id="RFxJ3P" name="Serialization.h" compile="0" resource="0" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/Serialization.h"/>
       <FILE id="ZDnLCt" name="LiveShaderPanel.cpp" compile="1" resource="0"
             file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/LiveShaderPanel.cpp"/>
       <FILE id="BCxAuK" name="LiveShaderPanel.h" compile="0" resource="0"

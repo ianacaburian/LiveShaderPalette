@@ -15,11 +15,11 @@
 
 ToolBar::ToolBar(MainComponent& parent) : parent{ parent }
 {
-    addAndMakeVisible(info_display);
-    addAndMakeVisible(num_panels_txt);
-    addAndMakeVisible(console_btn);
-    addAndMakeVisible(live_compile_btn);
-    addAndMakeVisible(folder_btn);
+    for (auto* c : std::initializer_list<Component*>{
+        &info_display, &num_panels_txt, &console_btn, &live_compile_btn, &folder_btn
+    }) {
+        addAndMakeVisible(c);
+    }
     live_compile_btn.setClickingTogglesState(true);
     console_btn.setClickingTogglesState(true);
     
@@ -98,7 +98,7 @@ void ToolBar::InfoDisplay::paint(Graphics& g)
 // ToolBar::LayoutType =========================================================
 
 ToolBar::LayoutType::Tiled::Tiled(const int num_panels)
-: num_panels{ std::max(1, static_cast<int>(std::pow(std::round(std::sqrt(num_panels)), 2))) } {}
+: num_panels{ std::max(1, static_cast<int>(std::pow(std::ceil(std::sqrt(num_panels)), 2))) } {}
 ToolBar::LayoutType::Rows::Rows(const int num_panels)
 : num_panels{ std::max(2, num_panels) } {}
 ToolBar::LayoutType::Columns::Columns(const int num_panels)
@@ -119,20 +119,14 @@ void ToolBar::initialize_layout_buttons()
     rows_btn.setConnectedEdges(Button::ConnectedOnLeft | Button::ConnectedOnRight);
     columns_btn.setConnectedEdges(Button::ConnectedOnLeft);
 
-    std::visit(Overloader{
-        [this](const LayoutType::Tiled& l) {
-            tiled_btn    .setToggleState(true, sendNotificationSync);
-            num_panels_txt.setText(String{ l.num_panels });
-        },
-        [this](const LayoutType::Rows& l) {
-            rows_btn      .setToggleState(true, sendNotificationSync);
-            num_panels_txt.setText(String{ l.num_panels });
-        },
-        [this](const LayoutType::Columns& l) {
-            columns_btn   .setToggleState(true, sendNotificationSync);
-            num_panels_txt.setText(String{ l.num_panels });
-        }
+    std::visit([this](const auto& l) {
+        using T = std::decay_t<decltype(l)>;
+         (std::is_same_v<T, LayoutType::Tiled> ? tiled_btn
+        : std::is_same_v<T, LayoutType::Rows>  ? rows_btn
+        : columns_btn).setToggleState(true, sendNotificationSync);
+        num_panels_txt.setText(String{ l.num_panels });
     }, layout);
+
 }
 void ToolBar::set_component_callbacks()
 {

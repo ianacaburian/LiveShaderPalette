@@ -66,6 +66,21 @@ void MainComponent::timerCallback() { recompile_shaders(); }
 
 //==============================================================================
 
+void MainComponent::initialize_fragment_file()
+{
+    auto shader_folder = File::getCurrentWorkingDirectory();
+    while (!shader_folder.isRoot()) {
+        if (shader_folder.getFileName() == JUCEApplication::getInstance()->getApplicationName()) {
+            shader_folder = shader_folder.getChildFile("Source/Shaders/");
+            break;
+        }
+        shader_folder = shader_folder.getParentDirectory();
+    }
+    if (! shader_folder.exists()) {
+        jassertfalse;
+    }
+//    fragment_file = shader_folder.getChildFile(fragment_filename);
+}
 void MainComponent::update_layout()
 {
     MessageManager::callAsync([&] {
