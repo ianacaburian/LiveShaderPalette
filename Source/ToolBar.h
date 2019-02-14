@@ -38,6 +38,7 @@ public:
     Layout get_layout() const;
     static Font mono_font(const float parent_height);
     Value& get_compile_rate_val();
+    Value& get_console_btn_val();
     int get_num_panels() const;
     bool is_live_compiling() const;
     
@@ -71,7 +72,7 @@ private:
     columns_btn         { "Columns" },
     live_compile_btn    { "Live Compile" },
     console_btn         { "Console" },
-    folder_btn          { "Folder" };
+    refresh_folder_btn  { "Refresh Folder" };
     Value compile_rate_val;
 
     //==============================================================================

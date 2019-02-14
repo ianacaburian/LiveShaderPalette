@@ -134,9 +134,7 @@ public:
             eventTime       = mouseEvent.eventTime.toMilliseconds() % std::numeric_limits<int>::max();
             mouseDownTime   = mouseEvent.mouseDownTime.toMilliseconds() % std::numeric_limits<int>::max();
             
-            if (child.isLogging()) {
-                logMouseCall(mouseEvent, std::move(eventType));
-            }
+            logMouseCall(mouseEvent, std::move(eventType));
         }
         void logMouseCall(const MouseEvent& mouseEvent, MouseVariant&& eventType)
         {
@@ -222,14 +220,11 @@ public:
     //==============================================================================
 
     MouseState      copyMouseState() const                          { return mouseState; }
-    void enableLogging(const bool enable) { logging = enable; }
-    bool isLogging() const { return logging; }
 
 private:
     //==============================================================================
     
     MouseState mouseState{ *this };
-    bool logging{};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenGLChildComponent)
 };
@@ -250,8 +245,8 @@ public:
     }
     void renderOpenGL() override final
     {
+        glEnable(GL_SCISSOR_TEST);
         renderOpenGLParent();
-        
         visitChildren([this](auto& child) {
             clipDrawArea(child.getBounds());
             child.renderOpenGL();
@@ -259,7 +254,6 @@ public:
     }
     void openGLContextClosing() override final
     {
-        DBG("openGLContextClosing()");
         visitChildren([](auto& child) { child.openGLContextClosing(); });
         openGLContextClosingParent();
     }
@@ -271,6 +265,18 @@ protected:
     virtual void renderOpenGLParent() {}
     virtual void openGLContextClosingParent() {}
     virtual float getRenderingScale() const = 0;
+    virtual void clipDrawArea(const Rectangle<int>& child)
+    {
+        const auto renderingScale = getRenderingScale();
+        auto* appWindow = getTopLevelComponent();
+        const auto appPosition = getLocalPoint(appWindow, Point<int>{ getX(), getY() });
+        const auto x = (appPosition.x + child.getX()) * renderingScale;
+        const auto y = (appWindow->getHeight() - (appPosition.y + child.getBottom())) * renderingScale;
+        const auto w = child.getWidth() * renderingScale;
+        const auto h = child.getHeight() * renderingScale;
+        glViewport(x, y, w, h);
+        glScissor(x, y, w, h);
+    }
 
     //==============================================================================
 
@@ -281,25 +287,13 @@ protected:
     void removeOpenGLRendererComponent(OpenGLRendererComponent* child)
     {
         if (const auto result = std::find_if(children.begin(), children.end(),
-                                             [&](auto& c) { return c.get() == child; });
+                                             [&](const auto& c) { return c.get() == child; });
             result != children.end()) {
             children.erase(result);
         }
     }
     std::size_t getNumOpenGLRendererComponents() const { return children.size(); }
-    void visitChildren(std::function<void(OpenGLRendererComponent&)> f)
-    {
-        for (auto& c : children) f(*c);
-    }
-    virtual void clipDrawArea(const Rectangle<int>& child)
-    {
-        const auto renderingScale = getRenderingScale(); // these getX() and getY() need to be relative to toplevel component
-        const auto x = (getX() + child.getX()) * renderingScale;
-        const auto y = (getTopLevelComponent()->getHeight() - (getY() + child.getBottom())) * renderingScale;
-        const auto w = child.getWidth() * renderingScale;
-        const auto h = child.getHeight() * renderingScale;
-        glViewport(x, y, w, h);
-    }
+    void visitChildren(std::function<void(OpenGLRendererComponent&)> f) { for (auto& c : children) f(*c); }
     
 private:
     //==============================================================================

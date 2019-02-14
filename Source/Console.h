@@ -11,6 +11,7 @@
 #pragma once
 #include "../JuceLibraryCode/JuceHeader.h"
 class MainComponent;
+class ToolBar;
 
 //==============================================================================
 
@@ -19,7 +20,7 @@ class Console : public DocumentWindow
 public:
     //==============================================================================
     
-    explicit Console(MainComponent& main_window);
+    explicit Console(MainComponent& main_window, ToolBar& tool_bar);
     ~Console() = default;
     void closeButtonPressed() override;
 
@@ -60,6 +61,7 @@ private:
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Content)
     };
     MainComponent& main_window;
+    ToolBar& tool_bar;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Console)
 };

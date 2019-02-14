@@ -11,7 +11,6 @@
 #pragma once
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "OpenGLComponent.h"
-#include "FragmentShaderFile.h"
 class MainComponent;
 class LiveShaderProgram;
 
@@ -28,10 +27,9 @@ public:
     void newOpenGLContextCreated() override;
     void renderOpenGL() override;
     void openGLContextClosing() override;
-
     //==============================================================================
     
-    void load_shader_file(const String& file_path);
+    void load_shader_file(const File& file);
     void recompile_shader();
 
 private:

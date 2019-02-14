@@ -13,13 +13,14 @@
 #include "MainComponent.h"
 //==============================================================================
 
-Console::Console(MainComponent& main_window)
+Console::Console(MainComponent& main_window, ToolBar& tool_bar)
 : DocumentWindow{
     "Live Shader Palette - Console",
     Desktop::getInstance().getDefaultLookAndFeel().findColour(ResizableWindow::backgroundColourId),
     DocumentWindow::closeButton
   }
 , main_window{ main_window }
+, tool_bar{ tool_bar }
 {
     setContentOwned(new Content{ *this }, true);
     setUsingNativeTitleBar (true);
@@ -28,6 +29,7 @@ Console::Console(MainComponent& main_window)
 }
 void Console::closeButtonPressed()
 {
+    tool_bar.get_console_btn_val().setValue(false);
     main_window.open_console(false);
 }
 
@@ -45,14 +47,14 @@ Console::Content::Content(Console& console)
         addAndMakeVisible(t);
     }
     
-    auto& compile_rate_val = console.main_window.get_compile_rate_val();
+    auto& compile_rate_val = console.tool_bar.get_compile_rate_val();
     compile_rate_sld.setValue(compile_rate_val.getValue());
     compile_rate_sld.getValueObject().referTo(compile_rate_val);
     compile_rate_sld.setSliderStyle(Slider::SliderStyle::LinearBar);
     compile_rate_sld.setTextBoxIsEditable(true);
     compile_rate_sld.setRange(500., 10000.);
     compile_rate_sld.onValueChange = [this] {
-        if (this->console.main_window.is_live_compiling()) {
+        if (this->console.tool_bar.is_live_compiling()) {
             this->console.main_window.stopTimer();
             this->console.main_window.startTimer(compile_rate_sld.getValue());
         }

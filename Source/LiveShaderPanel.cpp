@@ -15,7 +15,7 @@
 //==============================================================================
 
 LiveShaderPanel::LiveShaderPanel(MainComponent& parent, const int component_ID)
-: live_shader_program{ std::make_unique<LiveShaderProgram>(parent, *this, fragment_file) }
+: live_shader_program{ std::make_unique<LiveShaderProgram>(parent, *this, File{}) }
 , parent{ parent }
 {
     setComponentID(String{ component_ID });
@@ -41,12 +41,9 @@ void LiveShaderPanel::openGLContextClosing()
 
 //==============================================================================
 
-void LiveShaderPanel::load_shader_file(const String& file_path)
+void LiveShaderPanel::load_shader_file(const File& file)
 {
-    if (const auto file = File{ file_path};
-        file.getFileExtension() == ".frag") {
-        fragment_file = file;
-    }
+    fragment_file = file;
     recompile_shader();
 }
 void LiveShaderPanel::recompile_shader()

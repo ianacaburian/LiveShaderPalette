@@ -33,17 +33,16 @@ public:
 
     //==============================================================================
 
-    void initialize_fragment_file();
+    void collect_fragment_files();
+    void refresh_fragment_folder();
     void update_layout();
     void open_console(const bool open);
     Point<int> get_panel_area_size() const;
     Point<int> get_panel_size() const;
     std::pair<int, int> get_layout() const;
-    Value& get_compile_rate_val();
     Value& get_period_val();
     float get_sin_time() const;
     float get_saw_time() const;
-    bool is_live_compiling() const;
     bool is_console_open() const;
     
     
@@ -55,6 +54,8 @@ private:
     //==============================================================================
     
     std::vector<LiveShaderPanel*> panels;
+    File shader_folder;
+    std::vector<File> fragment_files;
     ToolBar tool_bar{ *this };
     std::unique_ptr<Console> console;
     Look look;

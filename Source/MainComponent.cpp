@@ -14,6 +14,7 @@
 
 MainComponent::MainComponent()
 {
+    collect_fragment_files();
     add_panels(0, tool_bar.get_num_panels());
     Desktop::getInstance().setDefaultLookAndFeel(&look);
     addAndMakeVisible(tool_bar);
@@ -66,21 +67,47 @@ void MainComponent::timerCallback() { recompile_shaders(); }
 
 //==============================================================================
 
-void MainComponent::initialize_fragment_file()
+void MainComponent::collect_fragment_files()
 {
-    auto shader_folder = File::getCurrentWorkingDirectory();
-    while (!shader_folder.isRoot()) {
-        if (shader_folder.getFileName() == JUCEApplication::getInstance()->getApplicationName()) {
-            shader_folder = shader_folder.getChildFile("Source/Shaders/");
-            break;
-        }
-        shader_folder = shader_folder.getParentDirectory();
+    const auto get_shader_folder = File::getSpecialLocation(File::SpecialLocationType::userDocumentsDirectory)
+                                        .getChildFile(JUCEApplication::getInstance()->getApplicationName())
+                                        .getChildFile("CWD");
+    if (const auto result = get_shader_folder.createDirectory();
+        result.wasOk()) {
+        shader_folder = get_shader_folder;
+        refresh_fragment_folder();
     }
-    if (! shader_folder.exists()) {
-        jassertfalse;
+    else {
+        const auto error = String{ "Could not create a folder in your Documents folder! Error: " }
+                         + result.getErrorMessage();
+        AlertWindow::showMessageBoxAsync(AlertWindow::WarningIcon, "Load error", error);
     }
-//    fragment_file = shader_folder.getChildFile(fragment_filename);
 }
+void MainComponent::refresh_fragment_folder()
+{
+    auto refresh_fragment_files = [this]{
+        fragment_files.clear();
+        auto dir = DirectoryIterator{ shader_folder, false, "*.frag", File::findFiles };
+        while (dir.next()) {
+            fragment_files.push_back(dir.getFile());
+        }
+    };
+    if (openGLContext.isAttached()) {
+        refresh_fragment_files();
+        if (const auto num_fragments = static_cast<int>(fragment_files.size());
+            num_fragments) {
+            visit_panels([&, i = 0](auto& panel) mutable {
+                panel.load_shader_file(fragment_files[i % num_fragments]);
+                ++i;
+            });
+            recompile_shaders();
+        }
+    }
+    else {
+        refresh_fragment_files();
+    }
+}
+
 void MainComponent::update_layout()
 {
     MessageManager::callAsync([&] {
@@ -102,17 +129,14 @@ void MainComponent::update_layout()
 }
 void MainComponent::open_console(const bool open)
 {
-    console = open ? std::make_unique<Console>(*this) : nullptr;
-    visit_panels([open](auto& panel) { panel.enableLogging(open); });
+    console = open ? std::make_unique<Console>(*this, tool_bar) : nullptr;
 }
 Point<int> MainComponent::get_panel_area_size() const { return panel_area_size; }
 Point<int> MainComponent::get_panel_size() const { return panel_size; }
 std::pair<int, int> MainComponent::get_layout() const { return { tool_bar.get_layout().index(), tool_bar.get_num_panels() }; }
-Value& MainComponent::get_compile_rate_val() { return tool_bar.get_compile_rate_val(); }
 Value& MainComponent::get_period_val() { return period; }
 float MainComponent::get_sin_time() const { return sin_time; }
 float MainComponent::get_saw_time() const { return saw_time; }
-bool MainComponent::is_live_compiling() const { return tool_bar.is_live_compiling(); }
 bool MainComponent::is_console_open() const { return console != nullptr; }
 
 //==============================================================================
@@ -125,14 +149,20 @@ MainComponent::Look::Look()
     setColour(TextButton::      textColourOffId,    Colours::grey);
     setColour(TextEditor::      backgroundColourId, Colours::black);
     setColour(TextEditor::      outlineColourId,    Colours::grey);
+    setColour(Label::textColourId, Colours::white);
 }
 
 // MainComponent::private: =====================================================
 
 void MainComponent::add_panels(const int initial_num_panels, const int num_panels_to_add)
 {
+    const auto num_fragments = static_cast<int>(fragment_files.size());
     for (int i = initial_num_panels; i != initial_num_panels + num_panels_to_add; ++i) {
-        addOpenGLRendererComponent(panels.emplace_back(new LiveShaderPanel{ *this, i }));
+        auto* new_panel = panels.emplace_back(new LiveShaderPanel{ *this, i });
+        if (num_fragments) {
+            new_panel->load_shader_file(fragment_files[i % num_fragments]);
+        }
+        addOpenGLRendererComponent(new_panel);
     }
 }
 void MainComponent::visit_panels(std::function<void(LiveShaderPanel&)> f) { for (auto& p : panels) f(*p); }

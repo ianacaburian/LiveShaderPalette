@@ -16,7 +16,7 @@
 ToolBar::ToolBar(MainComponent& parent) : parent{ parent }
 {
     for (auto* c : std::initializer_list<Component*>{
-        &info_display, &num_panels_txt, &console_btn, &live_compile_btn, &folder_btn
+        &info_display, &num_panels_txt, &console_btn, &live_compile_btn, &refresh_folder_btn
     }) {
         addAndMakeVisible(c);
     }
@@ -32,10 +32,10 @@ void ToolBar::resized()
 {
     auto bounds = getLocalBounds();
     num_panels_txt.applyFontToAllText(mono_font(static_cast<float>(bounds.getHeight())));
-    const auto button_width = proportionOfWidth(0.1f);
+    const auto button_width = proportionOfWidth(0.11f);
     for (auto* c : std::initializer_list<Component*>{
         &num_panels_txt, &tiled_btn, &rows_btn, &columns_btn,
-        &live_compile_btn, &console_btn, &folder_btn
+        &live_compile_btn, &console_btn, &refresh_folder_btn
     }) {
         c->setBounds(bounds.removeFromLeft(button_width));
     }
@@ -47,6 +47,7 @@ void ToolBar::resized()
 void ToolBar::log() { info_display.log(); }
 ToolBar::Layout ToolBar::get_layout() const { return layout; }
 Value& ToolBar::get_compile_rate_val() { return compile_rate_val; }
+Value& ToolBar::get_console_btn_val() { return console_btn.getToggleStateValue(); }
 int ToolBar::get_num_panels() const { return std::visit([this](const auto& l){ return l.num_panels; }, layout); }
 bool ToolBar::is_live_compiling() const { return live_compile_btn.getToggleState(); }
 
@@ -74,11 +75,11 @@ void ToolBar::InfoDisplay::log()
                 const auto panel_size = parent.get_panel_size();
                 const auto panel_area_size = parent.get_panel_area_size();
                 auto s = String{ "p " };
-                s << "OpenGLContext::getRenderingScale(): " << parent.getRenderingScale()
+                s << "Sin time: " << strf1(parent.get_sin_time())
+                  << "\nSaw time: " << strf1(parent.get_saw_time())
                   << "\n   Panel:  " << strd(panel_size.x) << " " << strd(panel_size.y)
                   << "\n  Screen:  " << strd(panel_area_size.x) << " " << strd(panel_area_size.y)
-                  << "\nSin time: " << strf1(parent.get_sin_time())
-                  << "\nSaw time: " << strf1(parent.get_saw_time());
+                  << "\nopenGLContext.getRenderingScale(): " << parent.getRenderingScale();
                 Logger::writeToLog(s);
             }
         });
@@ -169,8 +170,8 @@ void ToolBar::set_component_callbacks()
     console_btn.onClick = [this] {
         parent.open_console(console_btn.getToggleState());
     };
-    folder_btn.onClick = [this] {
-        
+    refresh_folder_btn.onClick = [this] {
+        parent.refresh_fragment_folder();
     };
 }
 Font ToolBar::mono_font(const float parent_height)
