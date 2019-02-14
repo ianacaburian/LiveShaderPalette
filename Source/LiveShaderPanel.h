@@ -33,8 +33,6 @@ public:
     
     void load_shader_file(const String& file_path);
     void recompile_shader();
-    void add_mouse_logger();
-    void delete_mouse_logger();
 
 private:
     //==============================================================================

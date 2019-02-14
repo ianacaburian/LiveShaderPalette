@@ -45,21 +45,40 @@ void main()
     
 //        float result = 0.;
 //    //    if (sin_time <= gl_PointCoord.x && gl_PointCoord.x < sin_time + 0.1) {
-//        vec2 res = uf_panel.xy * uf_panel.z;
+//        vec2 res = uf_screen_size.xy * uf_screen_size.z;
 //    //    if (res.x * 0.25 <= gl_FragCoord.x && gl_FragCoord.x < res.x * 0.25 + res.x * 0.5
 //    //        && res.y * 0.25 <= gl_FragCoord.y && gl_FragCoord.y < res.y * 0.25 + res.y * 0.5) {
-//        if (uf_sin_time<= gl_PointCoord.y && gl_PointCoord.y < (uf_sin_time + .1)) {
+//        if (uf_time.z<= gl_PointCoord.y && gl_PointCoord.y < (uf_time.z + .1)) {
 //            result = 1.;
 //        }
 //        out_color = vec4(0., result, 0., 1.);
 
-    float distance = 0.5;
-    vec2 p = gl_PointCoord.xy / distance;
-    float thickness = .01;
-    float radius = 0.5;
-    float intensity = thickness/abs(radius - length(p));
+//    float distance = 0.5;
+//    vec2 p = gl_PointCoord.xy / distance;
+//    float thickness = .01;
+//    float radius = 0.5;
+//    float intensity = thickness/abs(radius - length(p));
+//
+//    out_color = vec4(0., intensity, 0., .5);
+//
     
-    out_color = vec4(0., intensity, 0., .5);
+    float result = 0.;
+    vec2 res = uf_screen_size.xy * uf_screen_size.z;
+    if (-1. <= gl_PointCoord.y && gl_PointCoord.y < -0.95
+        || 0.95 <= gl_PointCoord.y && gl_PointCoord.y < 1.
+        || -1. <= gl_PointCoord.x && gl_PointCoord.x < -0.95
+        || 0.95 <= gl_PointCoord.x && gl_PointCoord.x < 1.) {
+        result = 1.;
+    }
+    float line1 = mod(gl_PointCoord.y, 10);
+    float result2 = 0.;
+    if (-0.5 <= gl_PointCoord.y && gl_PointCoord.y < -0.45
+        || 0. <= gl_PointCoord.y && gl_PointCoord.y < .05
+        || 0.5 <= gl_PointCoord.y && gl_PointCoord.y < 0.55) {
+        result2 = 1.;
+    }
+
+    out_color = vec4(result2, result, result, 1.);
 
 }
 

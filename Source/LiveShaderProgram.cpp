@@ -116,20 +116,19 @@ void LiveShaderProgram::Uniforms::create()
 void LiveShaderProgram::Uniforms::send_uniforms()
 {
     const auto panel_area_size = program.parent.get_panel_area_size();
-    GL::glUniform4i(uf_screen_size, program.panel.getWidth(), program.panel.getHeight(),
-                    panel_area_size.x, panel_area_size.y);
-    GL::glUniform1f(uf_rendering_scale, program.parent.getRenderingScale());
-    
     const auto mouse_state = program.panel.copyMouseState();
+    const auto mouse_options = mouse_options_to_float(mouse_state.lastEventType);
+    
+    GL::glUniform4i(uf_screen_size,         program.panel.getWidth(), program.panel.getHeight(),
+                                            panel_area_size.x, panel_area_size.y);
+    GL::glUniform1f(uf_rendering_scale,     program.parent.getRenderingScale());
     GL::glUniform1i(uf_mouse_type,          static_cast<int>(mouse_state.lastEventType.index()));
     GL::glUniform4f(uf_mouse_position,      mouse_state.mousePosition.x, mouse_state.mousePosition.y,
                                             mouse_state.mouseDownPosition.x, mouse_state.mouseDownPosition.y);
     GL::glUniform4f(uf_time,                mouse_state.eventTime, mouse_state.mouseDownTime,
                                             program.parent.get_sin_time(), program.parent.get_saw_time());
-    GL::glUniform4i(uf_flags, mouse_state.isDown, mouse_state.isToggled, mouse_state.isRightClick, 0);
-    
-    const auto mouse_options = mouse_options_to_float(mouse_state.lastEventType);
-    GL::glUniform2f(uf_mouse_options, mouse_options.x, mouse_options.y);
+    GL::glUniform4i(uf_flags,               mouse_state.isDown, mouse_state.isToggled, mouse_state.isRightClick, 0);
+    GL::glUniform2f(uf_mouse_options,       mouse_options.x, mouse_options.y);
 }
 GLint LiveShaderProgram::Uniforms::get_uniform_location(const char* uniform_id) const
 {

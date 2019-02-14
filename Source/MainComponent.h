@@ -10,6 +10,7 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "OpenGLComponent.h"
 #include "ToolBar.h"
+class LiveShaderPanel;
 class Console;
 
 //==============================================================================
@@ -24,8 +25,8 @@ public:
     explicit MainComponent();
     ~MainComponent();
     void resized() override;
-    void newOpenGLContextCreatedTopLevel() override;
-    void renderOpenGLTopLevel() override;
+    void newOpenGLContextCreatedParent() override;
+    void renderOpenGLParent() override;
     bool isInterestedInFileDrag (const StringArray& files) override;
     void filesDropped (const StringArray& files, int x, int y) override;
     void timerCallback() override;
@@ -52,8 +53,8 @@ private:
     
     //==============================================================================
     
+    std::vector<LiveShaderPanel*> panels;
     ToolBar tool_bar{ *this };
-    Slider scroll_bar;
     std::unique_ptr<Console> console;
     Look look;
     Point<int> panel_area_size{}, panel_size{};
@@ -61,8 +62,9 @@ private:
     Value period;
     
     //==============================================================================
-
+    
     void add_panels(const int initial_num_panels, const int num_panels_to_add);
+    void visit_panels(std::function<void(LiveShaderPanel&)> f);
     void recompile_shaders();
     void resize_panels(Rectangle<float>& bounds);
     
