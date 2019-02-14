@@ -14,26 +14,26 @@
 class MainComponent;
 class LiveShaderProgram;
 
-
 //==============================================================================
 
 class LiveShaderPanel   : public OpenGLChildComponent
 {
 public:
-    //==============================================================================
+    //==========================================================================
 
     explicit LiveShaderPanel(MainComponent& parent, const int component_ID);
-    ~LiveShaderPanel();
+    ~LiveShaderPanel() = default;
     void newOpenGLContextCreated() override;
     void renderOpenGL() override;
     void openGLContextClosing() override;
-    //==============================================================================
+    
+    //==========================================================================
     
     void load_shader_file(const File& file);
     void recompile_shader();
 
 private:
-    //==============================================================================
+    //==========================================================================
     
     OpenGLRectangle rectangle;
     File fragment_file{};

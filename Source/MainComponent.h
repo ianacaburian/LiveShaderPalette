@@ -18,10 +18,11 @@ class Console;
     This component lives inside our window, and this is where you should put all
     your controls and content.
 */
-class MainComponent   : public OpenGLTopLevelComponent, public FileDragAndDropTarget, public Timer
+class MainComponent : public OpenGLTopLevelComponent, public FileDragAndDropTarget, public Timer
 {
 public:
-    //==============================================================================
+    //==========================================================================
+
     explicit MainComponent();
     ~MainComponent();
     void resized() override;
@@ -31,7 +32,7 @@ public:
     void filesDropped (const StringArray& files, int x, int y) override;
     void timerCallback() override;
 
-    //==============================================================================
+    //==========================================================================
 
     void collect_fragment_files();
     void refresh_fragment_folder();
@@ -43,15 +44,14 @@ public:
     Value& get_period_val();
     float get_sin_time() const;
     float get_saw_time() const;
-    bool is_console_open() const;
-    
+    bool is_console_open() const;    
     
 private:
-    //==============================================================================
+    //==========================================================================
     
     struct Look : public LookAndFeel_V4 { explicit Look(); };
     
-    //==============================================================================
+    //==========================================================================
     
     std::vector<LiveShaderPanel*> panels;
     File shader_folder;
@@ -63,7 +63,7 @@ private:
     float sin_time{}, saw_time;
     Value period;
     
-    //==============================================================================
+    //==========================================================================
     
     void add_panels(const int initial_num_panels, const int num_panels_to_add);
     void visit_panels(std::function<void(LiveShaderPanel&)> f);

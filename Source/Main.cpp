@@ -61,9 +61,7 @@ public:
     class MainWindow    : public DocumentWindow
     {
     public:
-        MainWindow (String name)  : DocumentWindow (name,
-                                                    Colours::black,
-                                                    DocumentWindow::allButtons)
+        MainWindow (String name)  : DocumentWindow (name, Colours::black, DocumentWindow::allButtons)
         {
             setUsingNativeTitleBar (true);
             setContentOwned (new MainComponent(), true);

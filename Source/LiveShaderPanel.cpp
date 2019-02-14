@@ -20,9 +20,6 @@ LiveShaderPanel::LiveShaderPanel(MainComponent& parent, const int component_ID)
 {
     setComponentID(String{ component_ID });
 }
-
-LiveShaderPanel::~LiveShaderPanel() {}
-
 void LiveShaderPanel::newOpenGLContextCreated()
 {
     live_shader_program->create();

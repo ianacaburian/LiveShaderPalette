@@ -20,12 +20,12 @@ class LiveShaderProgram
 {
     using GL = juce::OpenGLExtensionFunctions;
 public:
-    //==============================================================================
+    //==========================================================================
 
     LiveShaderProgram(MainComponent& parent, LiveShaderPanel& panel, const File& fragment_file);
     ~LiveShaderProgram() = default;
     
-    //==============================================================================
+    //==========================================================================
 
     void create();
     void use();
@@ -33,19 +33,19 @@ public:
     void delete_program();
 
 private:
-    //==============================================================================
+    //==========================================================================
 
     struct LiveShader
     {
         GLuint shader_ID;
         
-        LiveShader(const GLenum type, const GLchar* source, const GLint source_length, const GLuint shader_prog_ID);
+        LiveShader(const GLenum type, const GLchar* source,
+                   const GLint source_length, const GLuint shader_prog_ID);
         ~LiveShader();
         void create_shader(const GLenum type, const GLchar* source, const GLint source_length);
-//        static String create_default_shader_source(const GLenum type);
     };
     
-    //==============================================================================
+    //==========================================================================
 
     struct Uniforms
     {
@@ -68,7 +68,7 @@ private:
         static Point<float> mouse_options_to_float(const MouseVariant& last_event_type);
     };
     
-    //==============================================================================
+    //==========================================================================
 
     Uniforms uniforms{ *this };
     String fragment_shader_source{};
@@ -76,7 +76,7 @@ private:
     MainComponent& parent;
     LiveShaderPanel& panel;
     
-    //==============================================================================
+    //==========================================================================
 
     Point<int> get_screen_size() const;
     static Result verify_operation_sucess(GLuint object_id, const GLenum type);

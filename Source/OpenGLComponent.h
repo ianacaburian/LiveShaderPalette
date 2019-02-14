@@ -3,8 +3,9 @@
 
     OpenGLComponent.h
     Created: 8 Feb 2019 8:34:52am
-    Authors:  Ian Caburian & Marius Metzger
-
+    Authors:  Ian Caburian
+    Thanks to Marius Metzger (Crushed Pixel)
+ 
   ==============================================================================
 */
 
@@ -18,12 +19,12 @@ class OpenGLRectangle final
 {
     using GL = juce::OpenGLExtensionFunctions;
 public:
-    //==============================================================================
+    //==========================================================================
     
     OpenGLRectangle() {}
     ~OpenGLRectangle() = default;
     
-    //==============================================================================
+    //==========================================================================
     
     void create()
     {
@@ -43,7 +44,8 @@ public:
         
         GL::glGenBuffers(1, &bufferID);
         GL::glBindBuffer(GL_ARRAY_BUFFER, bufferID);
-        GL::glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * positionsCount, positions, GL_STATIC_DRAW);
+        GL::glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * positionsCount,
+                         positions, GL_STATIC_DRAW);
         
         const auto positionAttribID = 0, dimensions = 2;
         GL::glEnableVertexAttribArray(positionAttribID);
@@ -52,7 +54,8 @@ public:
         
         GL::glGenBuffers(1, &elementsID);
         GL::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementsID);
-        GL::glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * elementsCount, elements, GL_STATIC_DRAW);
+        GL::glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * elementsCount,
+                         elements, GL_STATIC_DRAW);
     }
     void render()
     {
@@ -68,7 +71,7 @@ public:
     }
     
 private:
-    //==============================================================================
+    //==========================================================================
     
     GLuint arrayID{}, bufferID{}, elementsID{};
     static constexpr int elementsCount = 6;
@@ -115,7 +118,7 @@ class OpenGLRendererComponent : public OpenGLRenderer, public Component {};
 class OpenGLChildComponent : public OpenGLRendererComponent
 {
 public:
-    //==============================================================================
+    //==========================================================================
     
     struct MouseState
     {
@@ -172,7 +175,7 @@ public:
         }
     };
 
-    //==============================================================================
+    //==========================================================================
     
     explicit OpenGLChildComponent() = default;
     ~OpenGLChildComponent() = default;
@@ -217,12 +220,12 @@ public:
         mouseState.captureEvent(mouseEvent, MouseType::Magnify{ scaleFactor });
     }
 
-    //==============================================================================
+    //==========================================================================
 
-    MouseState      copyMouseState() const                          { return mouseState; }
+    MouseState copyMouseState() const { return mouseState; }
 
 private:
-    //==============================================================================
+    //==========================================================================
     
     MouseState mouseState{ *this };
 
@@ -234,7 +237,7 @@ private:
 class OpenGLParentComponent : public OpenGLRendererComponent
 {
 public:
-    //==============================================================================
+    //==========================================================================
 
     explicit OpenGLParentComponent() = default;
     ~OpenGLParentComponent() = default;
@@ -259,7 +262,7 @@ public:
     }
 
 protected:
-    //==============================================================================
+    //==========================================================================
 
     virtual void newOpenGLContextCreatedParent() {}
     virtual void renderOpenGLParent() {}
@@ -278,7 +281,7 @@ protected:
         glScissor(x, y, w, h);
     }
 
-    //==============================================================================
+    //==========================================================================
 
     void addOpenGLRendererComponent(OpenGLRendererComponent* child)
     {
@@ -296,7 +299,7 @@ protected:
     void visitChildren(std::function<void(OpenGLRendererComponent&)> f) { for (auto& c : children) f(*c); }
     
 private:
-    //==============================================================================
+    //==========================================================================
     
     std::vector<std::unique_ptr<OpenGLRendererComponent>> children;
 
@@ -308,7 +311,7 @@ private:
 class OpenGLTopLevelComponent : public OpenGLParentComponent
 {
 public:
-    //==============================================================================
+    //==========================================================================
     
     explicit OpenGLTopLevelComponent()
     {
@@ -322,7 +325,7 @@ public:
     float getRenderingScale() const override { return openGLContext.getRenderingScale(); }
     
 protected:
-    //==============================================================================
+    //==========================================================================
 
     OpenGLContext openGLContext;
     

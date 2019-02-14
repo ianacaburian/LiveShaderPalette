@@ -139,7 +139,7 @@ float MainComponent::get_sin_time() const { return sin_time; }
 float MainComponent::get_saw_time() const { return saw_time; }
 bool MainComponent::is_console_open() const { return console != nullptr; }
 
-//==============================================================================
+// MainComponent::Look =========================================================
 
 MainComponent::Look::Look()
 {

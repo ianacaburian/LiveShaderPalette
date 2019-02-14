@@ -18,14 +18,14 @@ class ToolBar;
 class Console : public DocumentWindow
 {
 public:
-    //==============================================================================
+    //==========================================================================
     
     explicit Console(MainComponent& main_window, ToolBar& tool_bar);
     ~Console() = default;
     void closeButtonPressed() override;
 
 private:
-    //==============================================================================
+    //==========================================================================
     
     struct Content : public Component
     {
@@ -35,7 +35,7 @@ private:
             static constexpr int history_lines = 40;
             Content& content;
 
-            //==============================================================================
+            //==================================================================
 
             explicit Log(Content& content);
             ~Log() = default;
@@ -43,7 +43,7 @@ private:
             
             JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Log)
         };
-        //==============================================================================
+        // Console::Content ====================================================
 
         Log log{ *this };
         TextEditor parent_txt, mouse_txt, compiler_txt;
@@ -52,7 +52,7 @@ private:
         static float constexpr row_scalar = 1.f / 40;
         Console& console;
         
-        //==============================================================================
+        //======================================================================
 
         explicit Content(Console& console);
         ~Content();
@@ -60,6 +60,8 @@ private:
         
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Content)
     };
+    // Console::private: =======================================================
+
     MainComponent& main_window;
     ToolBar& tool_bar;
     

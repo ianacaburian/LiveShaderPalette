@@ -11,7 +11,17 @@
 #include "ToolBar.h"
 #include "MainComponent.h"
 #include "Console.h"
-//==============================================================================
+
+// ToolBar::LayoutType =========================================================
+
+ToolBar::LayoutType::Tiled::Tiled(const int num_panels)
+: num_panels{ std::max(1, static_cast<int>(std::pow(std::ceil(std::sqrt(num_panels)), 2))) } {}
+ToolBar::LayoutType::Rows::Rows(const int num_panels)
+: num_panels{ std::max(2, num_panels) } {}
+ToolBar::LayoutType::Columns::Columns(const int num_panels)
+: num_panels{ std::max(2, num_panels) } {}
+
+// ToolBar =====================================================================
 
 ToolBar::ToolBar(MainComponent& parent) : parent{ parent }
 {
@@ -26,7 +36,6 @@ ToolBar::ToolBar(MainComponent& parent) : parent{ parent }
     initialize_layout_buttons();
     set_component_callbacks();
     compile_rate_val.setValue(1000);
-    //    live_compile.triggerClick();
 }
 void ToolBar::resized()
 {
@@ -59,7 +68,7 @@ ToolBar::InfoDisplay::InfoDisplay(MainComponent& parent) : parent{ parent }
     setOpaque(true);
 }
 void ToolBar::InfoDisplay::log()
-{   // OpenGL thread - do not block or call message thread
+{   // OpenGL thread - do not block or sync call message thread
     ++frame_count;
     if (const auto current_time = Time::currentTimeMillis();
         current_time - prev_time >= 1000.) {
@@ -95,15 +104,6 @@ void ToolBar::InfoDisplay::paint(Graphics& g)
     g.drawText(String::formatted("%.2f ms/frame", ms_frame),
                bounds, Justification::centredRight);
 }
-
-// ToolBar::LayoutType =========================================================
-
-ToolBar::LayoutType::Tiled::Tiled(const int num_panels)
-: num_panels{ std::max(1, static_cast<int>(std::pow(std::ceil(std::sqrt(num_panels)), 2))) } {}
-ToolBar::LayoutType::Rows::Rows(const int num_panels)
-: num_panels{ std::max(2, num_panels) } {}
-ToolBar::LayoutType::Columns::Columns(const int num_panels)
-: num_panels{ std::max(2, num_panels) } {}
 
 // ToolBar::private: ===========================================================
 

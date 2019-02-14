@@ -11,6 +11,7 @@
 #include "Console.h"
 #include "ToolBar.h"
 #include "MainComponent.h"
+
 //==============================================================================
 
 Console::Console(MainComponent& main_window, ToolBar& tool_bar)

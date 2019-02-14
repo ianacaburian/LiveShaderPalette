@@ -14,8 +14,7 @@
 
 //==============================================================================
 
-LiveShaderProgram::LiveShaderProgram(MainComponent& parent, LiveShaderPanel& panel,
-                                     const File& fragment_file)
+LiveShaderProgram::LiveShaderProgram(MainComponent& parent, LiveShaderPanel& panel, const File& fragment_file)
 : fragment_shader_source{ fragment_file.loadFileAsString() }
 , parent{ parent }
 , panel{ panel }
@@ -49,7 +48,7 @@ void LiveShaderProgram::render()
 }
 void LiveShaderProgram::delete_program() { GL::glDeleteProgram(shader_prog_ID); }
 
-//==============================================================================
+// LiveShaderProgram::LiveShader ===============================================
 
 LiveShaderProgram::LiveShader::LiveShader(const GLenum type, const GLchar* source,
                                           const GLint source_length, const GLuint shader_prog_ID)
@@ -72,7 +71,8 @@ LiveShaderProgram::LiveShader::~LiveShader()
 {
     GL::glDeleteShader(shader_ID);
 }
-void LiveShaderProgram::LiveShader::create_shader(const GLenum type, const GLchar* source, const GLint source_length)
+void LiveShaderProgram::LiveShader::create_shader(const GLenum type, const GLchar* source,
+                                                  const GLint source_length)
 {
     auto compile_shader = [this, type](const GLchar* source, const GLint source_length) {
         GL::glShaderSource(shader_ID, 1, &source, &source_length);
@@ -101,7 +101,7 @@ void LiveShaderProgram::LiveShader::create_shader(const GLenum type, const GLcha
     }
 }
 
-//==============================================================================
+// LiveShaderProgram::Uniforms =================================================
 
 LiveShaderProgram::Uniforms::Uniforms(LiveShaderProgram& program)
 : program{ program }
@@ -157,7 +157,7 @@ Point<float> LiveShaderProgram::Uniforms::mouse_options_to_float(const MouseVari
         return { 0.f, 0.f };
     }, last_event_type);
 }
-//==============================================================================
+// LiveShaderProgram::private: =================================================
 
 Result LiveShaderProgram::verify_operation_sucess(GLuint object_id, const GLenum type)
 {
