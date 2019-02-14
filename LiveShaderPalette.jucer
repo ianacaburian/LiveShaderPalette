@@ -20,10 +20,6 @@
       <FILE id="wRg5jV" name="MainComponent.h" compile="0" resource="0" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/MainComponent.h"/>
       <FILE id="waYvZY" name="OpenGLComponent.h" compile="0" resource="0"
             file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/OpenGLComponent.h"/>
-      <GROUP id="{FCB87DE1-98E8-63C6-20C9-40DB7B194AC7}" name="Shaders">
-        <FILE id="CPX2T7" name="Frag.frag" compile="0" resource="1" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/Shaders/Frag.frag"/>
-        <FILE id="N9jwlJ" name="Frag1.frag" compile="0" resource="1" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/Shaders/Frag1.frag"/>
-      </GROUP>
       <FILE id="I1IgJe" name="ToolBar.cpp" compile="1" resource="0" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/ToolBar.cpp"/>
       <FILE id="hGJsfy" name="ToolBar.h" compile="0" resource="0" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/ToolBar.h"/>
     </GROUP>
