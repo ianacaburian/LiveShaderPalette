@@ -9,6 +9,8 @@ Run your interactive animated OpenGL fragment shaders while editing.
   - Benchmark shader performance with the ms/frame display when using a large number of panels.
   - Separate window console displays the state of the fragment's uniforms for easy debugging.
 
+## Installation
+  - Either download and run one of the pre-built binaries or clone and build with JUCE.
 ## How to use
 ##### Panel Layout
   - Enter the number of panels to display at the top left.
