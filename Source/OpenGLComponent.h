@@ -325,11 +325,6 @@ public:
         openGLContext.setRenderer(this);
         openGLContext.attachTo(*this);        
     }
-    ~OpenGLTopLevelComponent()
-    {
-        openGLContext.detach();
-        openGLContext.setRenderer(nullptr);
-    }
     float getRenderingScale() const override { return openGLContext.getRenderingScale(); }
     
 protected:

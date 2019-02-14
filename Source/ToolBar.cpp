@@ -17,11 +17,12 @@ ToolBar::ToolBar(MainComponent& parent) : parent{ parent }
 {
     addAndMakeVisible(info_display);
     addAndMakeVisible(num_panels_txt);
-    addAndMakeVisible(live_compile_btn);
     addAndMakeVisible(console_btn);
+    addAndMakeVisible(live_compile_btn);
+    addAndMakeVisible(folder_btn);
     live_compile_btn.setClickingTogglesState(true);
     console_btn.setClickingTogglesState(true);
-
+    
     initialize_layout_buttons();
     set_component_callbacks();
     compile_rate_val.setValue(1000);
@@ -33,7 +34,8 @@ void ToolBar::resized()
     num_panels_txt.applyFontToAllText(mono_font(static_cast<float>(bounds.getHeight())));
     const auto button_width = proportionOfWidth(0.1f);
     for (auto* c : std::initializer_list<Component*>{
-        &live_compile_btn, &num_panels_txt, &tiled_btn, &rows_btn, &columns_btn, &console_btn
+        &num_panels_txt, &tiled_btn, &rows_btn, &columns_btn,
+        &live_compile_btn, &console_btn, &folder_btn
     }) {
         c->setBounds(bounds.removeFromLeft(button_width));
     }
@@ -113,6 +115,10 @@ void ToolBar::initialize_layout_buttons()
         c->setClickingTogglesState(true);
         c->setRadioGroupId(1);
     }
+    tiled_btn.setConnectedEdges(Button::ConnectedOnLeft | Button::ConnectedOnRight);
+    rows_btn.setConnectedEdges(Button::ConnectedOnLeft | Button::ConnectedOnRight);
+    columns_btn.setConnectedEdges(Button::ConnectedOnLeft);
+
     std::visit(Overloader{
         [this](const LayoutType::Tiled& l) {
             tiled_btn    .setToggleState(true, sendNotificationSync);
@@ -168,6 +174,9 @@ void ToolBar::set_component_callbacks()
     };
     console_btn.onClick = [this] {
         parent.open_console(console_btn.getToggleState());
+    };
+    folder_btn.onClick = [this] {
+        
     };
 }
 Font ToolBar::mono_font(const float parent_height)

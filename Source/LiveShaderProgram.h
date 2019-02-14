@@ -22,7 +22,7 @@ class LiveShaderProgram
 public:
     //==============================================================================
 
-    LiveShaderProgram(MainComponent& parent, LiveShaderPanel& panel, const File& vertex_file, const File& fragment_file);
+    LiveShaderProgram(MainComponent& parent, LiveShaderPanel& panel, const File& fragment_file);
     ~LiveShaderProgram() = default;
     
     //==============================================================================
@@ -57,6 +57,7 @@ private:
         uf_time,
         uf_flags,
         uf_mouse_options;
+        
         LiveShaderProgram& program;
         
         Uniforms(LiveShaderProgram& program);
@@ -68,16 +69,8 @@ private:
     
     //==============================================================================
 
-    struct ShaderProgramSource
-    {
-        String vertex;
-        String fragment;
-    };
-
-    //==============================================================================
-
     Uniforms uniforms{ *this };
-    ShaderProgramSource shader_program_source{};
+    String fragment_shader_source{};
     GLuint shader_prog_ID{};
     MainComponent& parent;
     LiveShaderPanel& panel;

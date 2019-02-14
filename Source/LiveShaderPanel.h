@@ -11,7 +11,7 @@
 #pragma once
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "OpenGLComponent.h"
-#include "Serialization.h"
+#include "FragmentShaderFile.h"
 class MainComponent;
 class LiveShaderProgram;
 
@@ -37,8 +37,20 @@ public:
 private:
     //==============================================================================
     
+    class FragmentShaderFile
+    {
+    public:
+        FragmentShaderFile(const char* fragment_filename);
+        ~FragmentShaderFile() = default;
+        
+        void load_shader_file(const String& file_path);
+        File get_fragment_file() const;
+    private:
+        File fragment_file{};
+    };
+    
     OpenGLRectangle rectangle;
-    Serialization serialization{ "Vert.vert", "Frag.frag" };
+    FragmentShaderFile serialization{ "Frag.frag" };
     std::unique_ptr<LiveShaderProgram> live_shader_program;
     MainComponent& parent;
    

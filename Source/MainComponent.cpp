@@ -24,7 +24,8 @@ MainComponent::MainComponent()
 MainComponent::~MainComponent()
 {
     open_console(false);
-    DBG("~MainComponent()");
+    openGLContext.detach();
+    openGLContext.setRenderer(nullptr);
 }
 void MainComponent::resized()
 {

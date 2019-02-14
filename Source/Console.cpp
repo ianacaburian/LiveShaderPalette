@@ -45,7 +45,9 @@ Console::Content::Content(Console& console)
         addAndMakeVisible(t);
     }
     
-    compile_rate_sld.getValueObject().referTo(console.main_window.get_compile_rate_val());
+    auto& compile_rate_val = console.main_window.get_compile_rate_val();
+    compile_rate_sld.setValue(compile_rate_val.getValue());
+    compile_rate_sld.getValueObject().referTo(compile_rate_val);
     compile_rate_sld.setSliderStyle(Slider::SliderStyle::LinearBar);
     compile_rate_sld.setTextBoxIsEditable(true);
     compile_rate_sld.setRange(500., 10000.);
@@ -59,10 +61,12 @@ Console::Content::Content(Console& console)
     addAndMakeVisible(compile_rate_sld);
     addAndMakeVisible(compile_rate_lbl);
 
-    period_sld.getValueObject().referTo(console.main_window.get_period_val());
+    auto& period_val = console.main_window.get_period_val();
+    period_sld.setValue(period_val.getValue());
+    period_sld.getValueObject().referTo(period_val);
     period_sld.setSliderStyle(Slider::SliderStyle::LinearBar);
     period_sld.setTextBoxIsEditable(true);
-    period_sld.setRange(10., 10000.);
+    period_sld.setRange(30., 3000.);
     period_lbl.setText("Period (ms)", dontSendNotification);
     addAndMakeVisible(period_sld);
     addAndMakeVisible(period_lbl);

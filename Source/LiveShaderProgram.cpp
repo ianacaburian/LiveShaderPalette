@@ -14,9 +14,8 @@
 
 //==============================================================================
 
-LiveShaderProgram::LiveShaderProgram(MainComponent& parent, LiveShaderPanel& panel,
-                                     const File& vertex_file, const File& fragment_file)
-: shader_program_source{ vertex_file.loadFileAsString(), fragment_file.loadFileAsString() }
+LiveShaderProgram::LiveShaderProgram(MainComponent& parent, LiveShaderPanel& panel, const File& fragment_file)
+: fragment_shader_source{ fragment_file.loadFileAsString() }
 , parent{ parent }
 , panel{ panel }
 {
@@ -27,11 +26,12 @@ LiveShaderProgram::LiveShaderProgram(MainComponent& parent, LiveShaderPanel& pan
 void LiveShaderProgram::create()
 {
     shader_prog_ID = GL::glCreateProgram();
-    auto vertex_shader =    LiveShader{ GL_VERTEX_SHADER, shader_program_source.vertex.getCharPointer(),
-                                        static_cast<GLint>(sizeof(GLchar) * shader_program_source.vertex.length()),
+    const auto default_vertex_source = LiveShader::create_default_shader_source(GL_VERTEX_SHADER);
+    auto vertex_shader =    LiveShader{ GL_VERTEX_SHADER, default_vertex_source.getCharPointer(),
+                                        static_cast<GLint>(sizeof(GLchar) * default_vertex_source.length()),
                                         shader_prog_ID };
-    auto fragment_shader =  LiveShader{ GL_FRAGMENT_SHADER, shader_program_source.fragment.getCharPointer(),
-                                        static_cast<GLint>(sizeof(GLchar) * shader_program_source.fragment.length()),
+    auto fragment_shader =  LiveShader{ GL_FRAGMENT_SHADER, fragment_shader_source.getCharPointer(),
+                                        static_cast<GLint>(sizeof(GLchar) * fragment_shader_source.length()),
                                         shader_prog_ID };
     GL::glLinkProgram(shader_prog_ID);
     
@@ -110,7 +110,7 @@ void LiveShaderProgram::Uniforms::create()
     uf_mouse_position       = get_uniform_location("uf_mouse_position");
     uf_time                 = get_uniform_location("uf_time");
     uf_flags                = get_uniform_location("uf_flags");
-    uf_time                 = get_uniform_location("uf_mouse_options");
+    uf_mouse_options        = get_uniform_location("uf_mouse_options");
 
 }
 void LiveShaderProgram::Uniforms::send_uniforms()
@@ -152,13 +152,16 @@ Point<float> LiveShaderProgram::Uniforms::mouse_options_to_float(const MouseVari
 Result LiveShaderProgram::verify_operation_sucess(GLuint object_id, const GLenum type)
 {
     GLint success;
-    (type == GL_COMPILE_STATUS ? GL::glGetShaderiv : GL::glGetProgramiv)(object_id, type, &success);
+    (type == GL_COMPILE_STATUS ? GL::glGetShaderiv : GL::glGetProgramiv)
+        (object_id, type, &success);
     if (! success) {    // TODO: create and print to a separate console window
         GLint length;
         glGetShaderiv(object_id, GL_INFO_LOG_LENGTH, &length);
-        (type == GL_COMPILE_STATUS ? GL::glGetShaderiv : GL::glGetProgramiv)(object_id, GL_INFO_LOG_LENGTH, &length);
+        (type == GL_COMPILE_STATUS ? GL::glGetShaderiv : GL::glGetProgramiv)
+            (object_id, GL_INFO_LOG_LENGTH, &length);
         auto* message = static_cast<char*>(alloca(sizeof(char) * length));
-        (type == GL_COMPILE_STATUS ? GL::glGetShaderInfoLog : GL::glGetProgramInfoLog)(object_id, length, &length, message);
+        (type == GL_COMPILE_STATUS ? GL::glGetShaderInfoLog : GL::glGetProgramInfoLog)
+            (object_id, length, &length, message);
         return Result::fail(message);
     }
     return Result::ok();

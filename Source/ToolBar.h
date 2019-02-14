@@ -66,11 +66,12 @@ private:
     Rectangle<int> toolbar_bounds;
     TextEditor num_panels_txt;
     TextButton
-    live_compile_btn    { "Live Compile" },
     tiled_btn           { "Tiled" },
     rows_btn            { "Rows" },
     columns_btn         { "Columns" },
-    console_btn         { "Console" };
+    live_compile_btn    { "Live Compile" },
+    console_btn         { "Console" },
+    folder_btn          { "Folder" };
     Value compile_rate_val;
 
     //==============================================================================
