@@ -26,7 +26,14 @@
 
  
 ## Demos
-## Console
+
+## Future
+  - Add save, load, undo, redo.
+  - Load texture resources.
+  - Support vertex shaders.
+> Pull requests welcome!
+## Reference
+##### Console
   - The lower area displays the OpenGL shader compiler errors.
   - Live compile rate: The rate that the app will recompile the current files.
   - Period: The rate that the sin and saw time functions use for animation speed.
@@ -36,7 +43,7 @@
   - Toggle flag: Simulates a toggle button; useful for designing toggleable button components.
   - Wheel move delta: An (x, y) vector where x represents horizontal wheel movement and y, vertical movement.
   - Magnify scale factor: The zoom scale that results from pinching touch gestures.
-## Uniforms reference
+##### Uniforms
 
 - `ivec4 uf_componentID_layout`    
     x = Component ID    
@@ -85,4 +92,4 @@
     y = Mouse wheel delta-y    
     z = Mouse magnify scale factor    
     
-> See the shader examples for a code version of this reference.
+> The shader examples include this reference.
