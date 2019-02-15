@@ -11,7 +11,7 @@ Run your interactive animated OpenGL fragment shaders while editing.
 
 ## Installation
   - Either download and run one of the pre-built binaries or clone and build with JUCE.
-  - To get started quickly, run the app, then copy the shaders from this repo's ShaderExamples folder into the app's CWD folder (located in your Documents folder).
+  - To get started quickly, run the app, then copy the shaders from this repo's ShaderExamples folder into the app's CWD folder (located in your Documents folder, generated automatically upon first launch).
   
 ## How to use
 >Fragment file extension must be ".frag".   
