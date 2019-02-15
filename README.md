@@ -2,7 +2,7 @@
 
 Run your interactive animated OpenGL fragment shaders while editing.
 
-  - "Live compile" allows the shader file to be recompiled at an adjustable rate (0.5 to 10sec) to streamline quick shader editing.
+  - "Live compile" allows the shader file to be recompiled at an adjustable rate to streamline quick shader editing.
   - Interactive mouse/touch input animation via juce::MouseListener interface.
   - Drag and drop shader files directly onto panels for side-by-side comparison editing.
   - Arrange panels by rows, columns or in a tiled layout fashion.
