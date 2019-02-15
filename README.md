@@ -14,7 +14,7 @@ Run your interactive animated OpenGL fragment shaders while editing.
   - To get started quickly, run the app, then copy the shaders from this repo's ShaderExamples folder into the app's CWD folder (located in your Documents folder).
   
 ## How to use
->Fragment files must end with a ".frag" file extension.   
+>Fragment file extension must be ".frag".   
 ##### Load files via folder  
   - Click the "Refresh folder" button to reload all panels using the files currently in "CWD".
 ##### Load files via drag-and-drop
