@@ -26,7 +26,7 @@ Run your interactive animated OpenGL fragment shaders while editing.
   - The lower area displays the OpenGL shader compiler errors.
   - Live compile rate: The rate that the app will recompile the current files.
   - Period: The rate that the sin and saw time functions use for animation speed.
-  - Rendering scale: All console coordinates (screen/panel size and mouse positions) are given in JUCE screen coordinates; multiply these by the renderingScale if OpenGL coordinates are required.
+  - Rendering scale: All console coordinates (screen/panel size and mouse positions) are provided in JUCE screen coordinates; multiply these by the rendering scale if OpenGL coordinates are required.
   - Component ID: The ID of the panel that's associated with the current mouse event.
   - Mouse positions: Mouse position is the current position whereas mouse down position is the position since the mouse was last pressed down; useful for drag events.
   - Toggle flag: Simulates a toggle button; useful for designing toggleable button components.
