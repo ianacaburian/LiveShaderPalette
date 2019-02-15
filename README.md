@@ -11,16 +11,17 @@ Run your interactive animated OpenGL fragment shaders while editing.
 
 ## Installation
   - Either download and run one of the pre-built binaries or clone and build with JUCE.
+  - To get started quickly, run the app, then copy the shaders from this repo's ShaderExamples folder into the app's CWD folder (located in your Documents folder).
+  
 ## How to use
-##### Panel Layout
-  - Enter the number of panels to display at the top left.
+>Fragment files must end with a ".frag" file extension.   
+##### Load files via folder  
+  - Click the "Refresh folder" button to reload all panels using the files currently in "CWD".
 ##### Load files via drag-and-drop
   - To load a single file into all panels, drag onto the tool bar area.
-  - To load into a single panel, drag onto any panel.
-##### Load files via folder
-  - Fragment files are loaded from the "LiveShaderPalette/CWD" folder located in your User Documents folder (this will be automatically created on first launch).    
-  - Click the "Refresh folder" button to reload all panels using the files currently in "CWD".
->Fragment files must end with a ".frag" file extension.    
+  - To load into a single panel, drag onto any panel. 
+##### Panel Layout
+  - Enter the number of panels to display at the top left.
 ##### Console
   - The lower area displays the OpenGL shader compiler errors.
   - Live compile rate: The rate that the app will recompile the current files.
