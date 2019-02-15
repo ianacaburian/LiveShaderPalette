@@ -34,7 +34,7 @@ Run your interactive animated OpenGL fragment shaders while editing.
   - Magnify scale factor: The zoom scale that results from pinching touch gestures.
  
 ##### Uniforms reference
-> The following can be pasted directly at the start of your fragment shader source file.
+> The following can be pasted directly at the start of your fragment shader source file.    
 `uniform ivec4   uf_componentID_layout;  // { Component ID, Layout Type [ 0 = Tiled, 1 = Rows, 2 = Columns ], Number of panels, 0 }`
 `uniform ivec4   uf_resolution;          // { Panel width, Panel height, Panels area width, Panels area height }`
 `uniform float   uf_rendering_scale;     // { openGLContext::getRenderingScale() }`
