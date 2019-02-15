@@ -33,3 +33,15 @@ Run your interactive animated OpenGL fragment shaders while editing.
   - Wheel move delta: An (x, y) vector where x represents horizontal wheel movement and y, vertical movement.
   - Magnify scale factor: The zoom scale that results from pinching touch gestures.
  
+##### Uniforms reference
+> The following can be pasted directly at the start of your fragment shader source file.
+uniform ivec4   uf_componentID_layout;  // { Component ID, Layout Type [ 0 = Tiled, 1 = Rows, 2 = Columns ], Number of panels, 0 }
+uniform ivec4   uf_resolution;          // { Panel width, Panel height, Panels area width, Panels area height }
+uniform float   uf_rendering_scale;     // { openGLContext::getRenderingScale() }
+uniform int     uf_mouse_type;          // [ 0 = Move, 1 = Enter, 2 = Exit, 3 = Down, 4 = Drag, 5 = Up, 6 = DoubleClick, 7 = WheelMove, 8 = Magnify ]
+uniform vec4    uf_mouse_position;      // { Mouse x-position, Mouse y-position, Mouse down x-position, Mouse down y-position }
+uniform vec4    uf_time;                // { Mouse event time, Mouse down time, Sin time, Saw time }
+uniform ivec4   uf_flags;               // { Mouse button is down, Button toggle flag, Right mouse button, 0 }
+uniform vec3    uf_mouse_options;       // { Mouse wheel delta-x, Mouse wheel delta-y, Mouse magnify scale factor }
+
+  - Live compile rate: The rate that the app will recompile the current files.
