@@ -77,11 +77,14 @@
     y = Mouse up y-position  
     z = Mouse down x-position    
     w = Mouse down y-position  
-- `vec4 uf_time`    
+- `ivec4 uf_mouse_time`    
     x = Mouse event time    
-    y = Mouse down time    
-    z = Sin time    
-    w = Saw time    
+    y = Mouse up time    
+    z = Mouse down time    
+    w = (empty)    
+- `vec2 uf_periodic_time`    
+    x = Sin time    
+    y = Saw time    
 - `ivec4 uf_flags`    
     x = Mouse button is down    
     y = Button toggle flag    
