@@ -77,19 +77,10 @@
     x = Sin time    
     y = Saw time    
 - `ivec4 uf_flags`    
-    x = Mouse type { 0 = Move    
-                     1 = Enter    
-    2 = Exit    
-    3 = Down     
-    4 = Drag    
-    5 = Up    
-    6 = Double Click    
-    7 = Wheel Move    
-    8 = Magnify  
-    x = Mouse button is down    
-    y = Button toggle flag    
-    z = Right mouse button    
-    w = (empty)    
+    x = Mouse type { 0 = Move, 1 = Enter, 2 = Exit, 3 = Down, 4 = Drag, 5 = Up, 6 = Double Click, 7 = Wheel Move, 8 = Magnify }    
+    y = Mouse button is down    
+    z = Button toggle flag    
+    w = Right mouse button    
 - `vec3 uf_mouse_options`    
     x = Mouse wheel delta-x    
     y = Mouse wheel delta-y    
