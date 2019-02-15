@@ -35,17 +35,17 @@ Run your interactive animated OpenGL fragment shaders while editing.
  
 ##### Uniforms reference
 
-- `ivec4 uf_componentID_layout`
-    x = Component ID
-    y = Layout Type [ 0 = Tiled, 1 = Rows, 2 = Columns ]
-    z = Number of panels
-    w = (empty)
+- `ivec4 uf_componentID_layout`    
+    x = Component ID    
+    y = Layout Type [ 0 = Tiled, 1 = Rows, 2 = Columns ]    
+    z = Number of panels    
+    w = (empty)    
     
-- `ivec4 uf_resolution`
-    x = Panel width
-    y = Panel height
-    z = Panels area width
-    w = Panels area height
+- `ivec4 uf_resolution`    
+    x = Panel width    
+    y = Panel height    
+    z = Panels area width    
+    w = Panels area height    
   
 - `float uf_rendering_scale`
     openGLContext::getRenderingScale() (see JUCE docs)
