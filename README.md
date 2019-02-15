@@ -61,11 +61,14 @@ Run your interactive animated OpenGL fragment shaders while editing.
     6 = Double Click    
     7 = Wheel Move    
     8 = Magnify    
-- `vec4 uf_mouse_position`    
+- `vec2 uf_mouse_position`    
     x = Mouse x-position    
     y = Mouse y-position    
+- `vec4 uf_mouse_click_position`    
+    x = Mouse up x-position    
+    y = Mouse up y-position  
     z = Mouse down x-position    
-    w = Mouse down y-position    
+    w = Mouse down y-position  
 - `vec4 uf_time`    
     x = Mouse event time    
     y = Mouse down time    
