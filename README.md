@@ -8,7 +8,7 @@
 
 ## Installation
   - Either download and run one of the pre-built binaries or clone and build with JUCE.
-## Quick start:
+## Quick start
 - Run the app.
 - Copy the shaders from this repo's ShaderExamples folder into the app's CWD folder (which upon first launch gets generated in your Documents folder).
 - Click "Refresh Folder"
