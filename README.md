@@ -13,15 +13,20 @@
 2. Copy the shaders from this repo's ShaderExamples folder into the app's CWD folder (which upon first launch gets generated in your Documents folder).
 3. Click "Refresh Folder"
 ## How to use
->Fragment file extension must be ".frag".   
 ##### Load files via folder  
-  - Click the "Refresh folder" button to reload all panels using the files currently in "CWD".
+  - Click the "Refresh folder" button to reload all panels using the shader files currently in the app's "CWD" folder.
+>Fragment file extension must be ".frag".   
 ##### Load files via drag-and-drop
   - To load a single file into all panels, drag onto the tool bar area.
   - To load into a single panel, drag onto any panel. 
+##### Live compile
+  - After loading a shader file into a panel, open it in an IDE then click the "Live Compile" button to display any changes that are saved while editing in the IDE (see Demos).
 ##### Panel Layout
   - Enter the number of panels to display at the top left.
-##### Console
+
+ 
+## Demos
+## Console
   - The lower area displays the OpenGL shader compiler errors.
   - Live compile rate: The rate that the app will recompile the current files.
   - Period: The rate that the sin and saw time functions use for animation speed.
@@ -31,9 +36,6 @@
   - Toggle flag: Simulates a toggle button; useful for designing toggleable button components.
   - Wheel move delta: An (x, y) vector where x represents horizontal wheel movement and y, vertical movement.
   - Magnify scale factor: The zoom scale that results from pinching touch gestures.
- 
-## Demos
-
 ## Uniforms reference
 
 - `ivec4 uf_componentID_layout`    
