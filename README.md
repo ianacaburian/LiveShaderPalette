@@ -1,17 +1,14 @@
 # LiveShaderPalette
 
-Run your interactive animated OpenGL fragment shaders while editing.
-
-  - "Live compile" allows the shader file to be recompiled at an adjustable rate to streamline quick shader editing.
-  - Interactive mouse/touch input animation via juce::MouseListener interface.
-  - Drag and drop shader files directly onto panels for side-by-side comparison editing.
-  - Arrange panels by rows, columns or in a tiled layout fashion.
-  - Benchmark shader performance with the ms/frame display when using a large number of panels.
-  - Separate window console displays the state of the fragment's uniforms for easy debugging.
+  - Live code your animated OpenGL fragment shaders.
+  - Interactive graphics design made easier with ready made uniform routings for mouse/touch input events.
+  - Arrange panels by rows, columns or in a tiled layout fashion for quick side-by-side comparison editing.
+  - With a high number of panels in fullscreen, shader code quality can be profiled or benchmarked. 
+  - Includes separate window console displaying the state of all uniforms and any OpenGL compilation errors.
 
 ## Installation
   - Either download and run one of the pre-built binaries or clone and build with JUCE.
-  - To get started quickly, run the app, then copy the shaders from this repo's ShaderExamples folder into the app's CWD folder (located in your Documents folder, generated automatically upon first launch).
+  - To get started quickly, run the app, then copy the shaders from this repo's ShaderExamples folder into the app's CWD folder, which upon first launch, get generated in your Documents folder.
   
 ## How to use
 >Fragment file extension must be ".frag".   
