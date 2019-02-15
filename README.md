@@ -48,7 +48,7 @@
 
 - `ivec4 uf_componentID_layout`    
     x = Component ID    
-    y = Layout Type [ 0 = Tiled, 1 = Rows, 2 = Columns ]    
+    y = Layout type { 0 = Tiled, 1 = Rows, 2 = Columns }    
     z = Number of panels    
     w = (empty)    
     
@@ -59,21 +59,11 @@
     w = Panels area height    
   
 - `float uf_rendering_scale`    
-    openGLContext::getRenderingScale() (see JUCE docs)    
-- `int uf_mouse_type`    
-    0 = Move    
-    1 = Enter    
-    2 = Exit    
-    3 = Down     
-    4 = Drag    
-    5 = Up    
-    6 = Double Click    
-    7 = Wheel Move    
-    8 = Magnify    
-- `vec2 uf_mouse_position`    
-    x = Mouse x-position    
-    y = Mouse y-position    
-- `vec4 uf_mouse_click_position`    
+    openGLContext::getRenderingScale() (see JUCE docs)      
+- `vec2 uf_event_position`    
+    x = Event x-position    
+    y = Event y-position    
+- `vec4 uf_mouse_position`    
     x = Mouse up x-position    
     y = Mouse up y-position  
     z = Mouse down x-position    
@@ -87,6 +77,15 @@
     x = Sin time    
     y = Saw time    
 - `ivec4 uf_flags`    
+    x = Mouse type { 0 = Move    
+                     1 = Enter    
+    2 = Exit    
+    3 = Down     
+    4 = Drag    
+    5 = Up    
+    6 = Double Click    
+    7 = Wheel Move    
+    8 = Magnify  
     x = Mouse button is down    
     y = Button toggle flag    
     z = Right mouse button    
