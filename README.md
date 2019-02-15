@@ -33,7 +33,9 @@ Run your interactive animated OpenGL fragment shaders while editing.
   - Wheel move delta: An (x, y) vector where x represents horizontal wheel movement and y, vertical movement.
   - Magnify scale factor: The zoom scale that results from pinching touch gestures.
  
-##### Uniforms reference
+## Demos
+
+## Uniforms reference
 
 - `ivec4 uf_componentID_layout`    
     x = Component ID    
