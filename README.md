@@ -21,6 +21,7 @@
   - To load into a single panel, drag onto any panel. 
 ##### Live compile
   - After loading a shader file into a panel, open it in an IDE then click the "Live Compile" button to display any changes that are saved while editing in the IDE (see Demos).
+>Mouse/touch input is best when Live Compile is disabled.
 ##### Panel Layout
   - Enter the number of panels to display at the top left.
 
