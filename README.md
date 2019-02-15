@@ -34,21 +34,58 @@ Run your interactive animated OpenGL fragment shaders while editing.
   - Magnify scale factor: The zoom scale that results from pinching touch gestures.
  
 ##### Uniforms reference
-> The following can be pasted directly at the start of your fragment shader source file.    
+
+- `ivec4 uf_componentID_layout`
+    x = Component ID
+    y = Layout Type [ 0 = Tiled, 1 = Rows, 2 = Columns ]
+    z = Number of panels
+    w = (empty)
+    
+- `ivec4 uf_resolution`
+    x = Panel width
+    y = Panel height
+    z = Panels area width
+    w = Panels area height
+  
+- `float uf_rendering_scale`
+    openGLContext::getRenderingScale() (see JUCE docs)
+- `int uf_mouse_type`
+    0 = Move
+    1 = Enter
+    2 = Exit
+    3 = Down 
+    4 = Drag
+    5 = Up
+    6 = Double Click
+    7 = Wheel Move
+    8 = Magnify
+- `vec4 uf_mouse_position`
+    x = Mouse x-position
+    y = Mouse y-position
+    z = Mouse down x-position
+    w = Mouse down y-position
+- `vec4 uf_time`
+    x = Mouse event time
+    y = Mouse down time
+    z = Sin time
+    w = Saw time
+- `ivec4 uf_flags`
+    x = Mouse button is down
+    y = Button toggle flag
+    z = Right mouse button
+    w = (empty)
+- `vec3 uf_mouse_options`
+    x = Mouse wheel delta-x
+    y = Mouse wheel delta-y
+    z = Mouse magnify scale factor
+    
+> The following can be pasted directly at the start of your fragment shader source file. 
 
 `uniform ivec4   uf_componentID_layout;  // { Component ID, Layout Type [ 0 = Tiled, 1 = Rows, 2 = Columns ], Number of panels, 0 }`
-
 `uniform ivec4   uf_resolution;          // { Panel width, Panel height, Panels area width, Panels area height }`
-
 `uniform float   uf_rendering_scale;     // { openGLContext::getRenderingScale() }`
-
 `uniform int     uf_mouse_type;          // [ 0 = Move, 1 = Enter, 2 = Exit, 3 = Down, 4 = Drag, 5 = Up, 6 = DoubleClick, 7 = WheelMove, 8 = Magnify ]`
-
 `uniform vec4    uf_mouse_position;      // { Mouse x-position, Mouse y-position, Mouse down x-position, Mouse down y-position }`
-
 `uniform vec4    uf_time;                // { Mouse event time, Mouse down time, Sin time, Saw time }`
-
 `uniform ivec4   uf_flags;               // { Mouse button is down, Button toggle flag, Right mouse button, 0 }`
-
 `uniform vec3    uf_mouse_options;       // { Mouse wheel delta-x, Mouse wheel delta-y, Mouse magnify scale factor }`
-
