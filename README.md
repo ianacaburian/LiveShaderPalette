@@ -39,15 +39,15 @@
   - Add save, load, undo, redo.
   - Load texture resources.
   - Support vertex shaders.
-> Pull requests welcome!
+> Feature suggestions and pull requests welcome!
 ## Reference
 ##### Console
   - The lower area displays the OpenGL shader compiler errors.
   - Live compile rate: The rate that the app will recompile the current files.
   - Period: The rate that the sin and saw time functions use for animation speed.
-  - Rendering scale: All console coordinates (screen/panel size and mouse positions) are provided in JUCE screen coordinates; multiply these by the rendering scale if OpenGL coordinates are required.
+  - Rendering scale: All console coordinates (screen/panel size and mouse positions) are provided in JUCE screen coordinates (i.e. in pixel resolution with the origin at top left); multiply these by the rendering scale if OpenGL coordinates are required (i.e. gl_FragCoord uses pixel resolution of the entire panel area with origin at bottom left and inverted to JUCE, gl_PointCoord uses normalized coordinates in the range [-1, 1] with origin in the center).
   - Component ID: The ID of the panel that's associated with the current mouse event.
-  - Mouse positions: Mouse position is the current position whereas mouse down position is the position since the mouse was last pressed down; useful for drag events.
+  - Mouse positions: Event position is the current position whereas mouse up/down position is the position since the mouse was last pressed up or down; useful for traditional click and drag component simulation.
   - Toggle flag: Simulates a toggle button; useful for designing toggleable button components.
   - Wheel move delta: An (x, y) vector where x represents horizontal wheel movement and y, vertical movement.
   - Magnify scale factor: The zoom scale that results from pinching touch gestures.
