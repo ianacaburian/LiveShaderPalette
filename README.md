@@ -23,8 +23,8 @@
   - After loading a shader file into a panel, open it in an IDE then click the "Live Compile" button to display any changes that are saved while editing in the IDE (see Demos).
 >Mouse/touch input is uninterrupted when Live Compile is disabled.
 ##### Panel Layout
-  - Enter the number of panels to display at the top left.
-
+  - Choose a layout by clicking either "Tiled", "Rows", or "Columns". Tiled only accepts round square root integers; Rows and Columns accepts a minimum of 2 panels.
+  - Enter the number of panels to display in the text field at the top left.
  
 ## Demos
 
