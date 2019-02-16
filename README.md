@@ -27,9 +27,9 @@
   - Enter the number of panels to display in the text field at the top left.
  
 ## Demos
-<img width="500" src="https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/LiveCompiling.gif">    
+<img src="https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/LiveCompiling.gif">    
 <img src="https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/Layout.gif">    
-<img width="500" src="https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/FileLoading.gif">    
+<img src="https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/FileLoading.gif">    
 ## Future
   - Add save, load, undo, redo.
   - Load texture resources.
