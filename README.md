@@ -16,7 +16,7 @@
 <img src="https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/LoadFiles.gif">  
 
 ## Installation
-  - Either download and run one of the pre-built binaries or clone and build with JUCE.
+  - Either download the pre-built binary or clone and build with JUCE.
 ## Quick start
 1. Run the app.
 2. Copy the shaders from this repo's ShaderExamples folder into the app's CWD folder (which upon first launch gets generated in your Documents folder).
