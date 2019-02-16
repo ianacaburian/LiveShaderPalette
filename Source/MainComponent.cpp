@@ -20,7 +20,7 @@ MainComponent::MainComponent()
     addAndMakeVisible(tool_bar);
 
     period.setValue(1000);
-    setSize(400, 300);
+    setSize(640, 480 * (1 + tool_bar_scalar));
 }
 MainComponent::~MainComponent()
 {
@@ -31,11 +31,18 @@ MainComponent::~MainComponent()
 void MainComponent::resized()
 {
     auto bounds = getLocalBounds().toFloat();
-    tool_bar.setBounds(bounds.removeFromTop(proportionOfHeight(0.05f)).toNearestIntEdges());
+    tool_bar.setBounds(bounds.removeFromTop(proportionOfHeight(tool_bar_scalar)).toNearestIntEdges());
     resize_panels(bounds);
 }
 void MainComponent::newOpenGLContextCreatedParent()
 {
+    shader_compilation_errors = false;
+}
+void MainComponent::checkContextCreation()
+{
+    if (! shader_compilation_errors) {
+        MessageManager::callAsync([]{ Logger::writeToLog("s All shaders compiled successfully."); });
+    }
 }
 void MainComponent::renderOpenGLParent()
 {
@@ -89,7 +96,7 @@ void MainComponent::refresh_fragment_folder()
 {
     auto refresh_fragment_files = [this]{
         fragment_files.clear();
-        auto dir = DirectoryIterator{ shader_folder, false, "*.frag", File::findFiles };
+        auto dir = DirectoryIterator{ shader_folder, true, "*.frag", File::findFiles };
         while (dir.next()) {
             fragment_files.push_back(dir.getFile());
         }
@@ -133,6 +140,7 @@ void MainComponent::open_console(const bool open)
 {
     console = open ? std::make_unique<Console>(*this, tool_bar) : nullptr;
 }
+void MainComponent::report_shader_compilation_error() { shader_compilation_errors = true; }
 Point<int> MainComponent::get_panel_area_size() const { return panel_area_size; }
 Point<int> MainComponent::get_panel_size() const { return panel_size; }
 std::pair<int, int> MainComponent::get_layout() const { return { tool_bar.get_layout().index(), tool_bar.get_num_panels() }; }

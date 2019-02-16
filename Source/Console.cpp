@@ -75,7 +75,7 @@ Console::Content::Content(Console& console)
     addAndMakeVisible(period_lbl);
 
     const auto main_display = Desktop::getInstance().getDisplays().getMainDisplay();
-    setSize(main_display.userArea.proportionOfWidth(0.4f), main_display.userArea.proportionOfHeight(0.4f));
+    setSize(main_display.userArea.proportionOfWidth(0.4f), main_display.userArea.proportionOfHeight(0.5f));
     Logger::setCurrentLogger(&log);
 }
 Console::Content::~Content()
@@ -105,7 +105,7 @@ void Console::Content::resized()
         c->setBounds(slider_bounds.removeFromTop(row_height));
     }
     parent_txt.setBounds(top_bounds);
-    mouse_txt.setBounds(bounds.removeFromTop(row_height * 10));
+    mouse_txt.setBounds(bounds.removeFromTop(row_height * 12));
     compiler_txt.setBounds(bounds);
 }
 

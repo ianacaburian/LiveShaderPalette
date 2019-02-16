@@ -47,3 +47,7 @@ void LiveShaderPanel::recompile_shader()
 {
     live_shader_program.reset(new LiveShaderProgram{ parent, *this, fragment_file });
 }
+String LiveShaderPanel::get_current_fragment_file_path() const
+{
+    return fragment_file.getFullPathName();
+}

@@ -84,11 +84,12 @@ void ToolBar::InfoDisplay::log()
                 const auto panel_size = parent.get_panel_size();
                 const auto panel_area_size = parent.get_panel_area_size();
                 auto s = String{ "p " };
-                s << "Sin time: " << strf1(parent.get_sin_time())
-                  << "\nSaw time: " << strf1(parent.get_saw_time())
+                s << "openGLContext.getRenderingScale(): " << parent.getRenderingScale()
                   << "\n   Panel:  " << strd(panel_size.x) << " " << strd(panel_size.y)
                   << "\n  Screen:  " << strd(panel_area_size.x) << " " << strd(panel_area_size.y)
-                  << "\nopenGLContext.getRenderingScale(): " << parent.getRenderingScale();
+                  << "\nSin time: " << strf1(parent.get_sin_time())
+                  << "\nSaw time: " << strf1(parent.get_saw_time());
+                
                 Logger::writeToLog(s);
             }
         });

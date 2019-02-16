@@ -123,19 +123,33 @@ public:
     struct MouseState
     {
         MouseVariant lastEventType{ MouseType::Up{} };
-        Point<float> mousePosition{}, mouseDownPosition{};
+        Point<float> eventPosition{}, mouseUpPosition{}, mouseDownPosition{}, wheelDelta{};
         OpenGLChildComponent& child;
-        int eventTime{}, mouseDownTime{};
+        float scaleFactor{};
+        int eventTime{}, mouseUpTime{}, mouseDownTime{};
         bool isDown{}, isRightClick{}, isToggled{};
         
         MouseState(OpenGLChildComponent& child) : child{ child } {}
         void captureEvent(const MouseEvent& mouseEvent, MouseVariant&& eventType)
         {
-            lastEventType = eventType;
-            mousePosition = mouseEvent.position;
-            mouseDownPosition = mouseEvent.mouseDownPosition;
-            eventTime       = mouseEvent.eventTime.toMilliseconds() % std::numeric_limits<int>::max();
-            mouseDownTime   = mouseEvent.mouseDownTime.toMilliseconds() % std::numeric_limits<int>::max();
+            lastEventType       = eventType;
+            eventPosition       = mouseEvent.position;
+            mouseDownPosition   = mouseEvent.mouseDownPosition;
+            eventTime           = mouseEvent.eventTime.toMilliseconds() % std::numeric_limits<int>::max();
+            mouseDownTime       = mouseEvent.mouseDownTime.toMilliseconds() % std::numeric_limits<int>::max();
+            if (isDown) {
+                mouseUpPosition = mouseEvent.position;
+                mouseUpTime     = eventTime;
+            }
+            std::visit([this](const auto& m) {
+                using T = std::decay_t<decltype(m)>;
+                if constexpr (std::is_same_v<T, MouseType::WheelMove>) {
+                    wheelDelta = { m.wheel.deltaX, m.wheel.deltaY };
+                }
+                else if constexpr (std::is_same_v<T, MouseType::Magnify>) {
+                    scaleFactor = m.scaleFactor;
+                }
+            }, eventType);
             
             logMouseCall(mouseEvent, std::move(eventType));
         }
@@ -145,13 +159,16 @@ public:
             auto strf1 = [](const float f) { return String::formatted("% .2f", f); };
             auto s = String{ "m " };
             s <<   "      componentID: " << child.getComponentID()
-              << "\n    mousePosition:"  << strf8(mousePosition.x) << " "
-                                         << strf8(mousePosition.y)
+              << "\n    mousePosition:"  << strf8(eventPosition.x) << " "
+                                         << strf8(eventPosition.y)
+              << "\n  mouseUpPosition:"  << strf8(mouseUpPosition.x) << " "
+                                         << strf8(mouseUpPosition.y)
               << "\nmouseDownPosition:"  << strf8(mouseDownPosition.x) << " "
                                          << strf8(mouseDownPosition.y)
               << "\n           isDown? " << (isDown ? "DOWN" : "UP  ")
               << "\n     isRightClick? " << (isRightClick ? "RIGHT" : "LEFT ")
               << "\n        isToggled? " << (isToggled ? "ON " : "OFF")
+              << "\n      mouseUpTime: " << mouseUpTime
               << "\n    mouseDownTime: " << mouseDownTime
               << "\n        eventTime: " << eventTime << " |"
               << " Type: ";
@@ -245,6 +262,7 @@ public:
     {
         newOpenGLContextCreatedParent();
         visitChildren([](auto& child) { child.newOpenGLContextCreated(); });
+        checkContextCreation();
     }
     void renderOpenGL() override final
     {
@@ -265,6 +283,7 @@ protected:
     //==========================================================================
 
     virtual void newOpenGLContextCreatedParent() {}
+    virtual void checkContextCreation() {}
     virtual void renderOpenGLParent() {}
     virtual void openGLContextClosingParent() {}
     virtual float getRenderingScale() const = 0;

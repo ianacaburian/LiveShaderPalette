@@ -38,11 +38,12 @@ private:
     struct LiveShader
     {
         GLuint shader_ID;
+        LiveShaderProgram& program;
         
-        LiveShader(const GLenum type, const GLchar* source,
+        LiveShader(LiveShaderProgram& program, const GLenum type, const GLchar* source,
                    const GLint source_length, const GLuint shader_prog_ID);
         ~LiveShader();
-        void create_shader(const GLenum type, const GLchar* source, const GLint source_length);
+        void create_shader(const GLenum type, const GLchar* source, const GLint source_length, const String& error = {});
     };
     
     //==========================================================================
@@ -53,9 +54,10 @@ private:
         uf_componentID_layout,
         uf_resolution,
         uf_rendering_scale,
-        uf_mouse_type,
+        uf_event_position,
         uf_mouse_position,
-        uf_time,
+        uf_mouse_time,
+        uf_periodic_time,
         uf_flags,
         uf_mouse_options;
         
@@ -65,7 +67,6 @@ private:
         void create();
         void send_uniforms();
         GLint get_uniform_location(const char* uniform_id) const;
-        static Point<float> mouse_options_to_float(const MouseVariant& last_event_type);
     };
     
     //==========================================================================

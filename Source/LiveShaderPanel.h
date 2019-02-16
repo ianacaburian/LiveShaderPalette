@@ -31,7 +31,8 @@ public:
     
     void load_shader_file(const File& file);
     void recompile_shader();
-
+    String get_current_fragment_file_path() const;
+    
 private:
     //==========================================================================
     

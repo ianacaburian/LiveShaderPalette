@@ -27,9 +27,10 @@ public:
     ~MainComponent();
     void resized() override;
     void newOpenGLContextCreatedParent() override;
+    void checkContextCreation() override;
     void renderOpenGLParent() override;
     bool isInterestedInFileDrag (const StringArray& files) override;
-    void filesDropped (const StringArray& files, int x, int y) override;
+    void filesDropped(const StringArray& files, int x, int y) override;
     void timerCallback() override;
 
     //==========================================================================
@@ -38,13 +39,14 @@ public:
     void refresh_fragment_folder();
     void update_layout();
     void open_console(const bool open);
+    void report_shader_compilation_error();
     Point<int> get_panel_area_size() const;
     Point<int> get_panel_size() const;
     std::pair<int, int> get_layout() const;
     Value& get_period_val();
     float get_sin_time() const;
     float get_saw_time() const;
-    bool is_console_open() const;    
+    bool is_console_open() const;
     
 private:
     //==========================================================================
@@ -60,8 +62,10 @@ private:
     std::unique_ptr<Console> console;
     Look look;
     Point<int> panel_area_size{}, panel_size{};
-    float sin_time{}, saw_time;
     Value period;
+    float sin_time{}, saw_time;
+    static constexpr float tool_bar_scalar = 0.05f;
+    std::atomic<bool> shader_compilation_errors{};
     
     //==========================================================================
     
