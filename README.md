@@ -9,7 +9,7 @@
 ##### Click "Live Compile" then edit your shader in an IDE. After saving, watch the app display your changes.
 <img src="https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/LiveCompile.gif">    
 ###### Enter the number of panels and select a layout to arrange your shaders for comparison or testing.
-<img src="https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/AdjustingLayout.gif">    
+<img src="https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/AdjustLayout.gif">    
 ###### Copy .frag files into the app's "CWD" folder and click "Refresh Folder" to load them.
 <img src="https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/LoadFiles.gif">  
 
