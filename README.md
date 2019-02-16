@@ -6,10 +6,12 @@
   - With a high number of panels in fullscreen, shader code quality can be profiled or benchmarked. 
   - Includes separate window console displaying the state of all uniforms and any OpenGL compilation errors.
 
-
-<img src="https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/LiveCompiling.gif">    
-<img src="https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/Layout.gif">    
-<img src="https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/FileLoading.gif">  
+##### Click "Live Compile" then edit your shader in an IDE. After saving, watch the app display your changes.
+<img src="https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/LiveCompile.gif">    
+###### Enter the number of panels and select a layout to arrange your shaders for comparison or testing.
+<img src="https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/AdjustingLayout.gif">    
+###### Copy .frag files into the app's "CWD" folder and click "Refresh Folder" to load them.
+<img src="https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/LoadFiles.gif">  
 
 ## Installation
   - Either download and run one of the pre-built binaries or clone and build with JUCE.
