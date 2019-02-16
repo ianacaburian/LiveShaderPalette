@@ -27,7 +27,7 @@
   - Enter the number of panels to display in the text field at the top left.
  
 ## Demos
-![](https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/LiveCompiling.gif){:height="50%" width="50%"}   
+![test image size](https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/LiveCompiling.gif){:height="50%" width="50%"}   
 ![](https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/Layout.gif)    
 ![](https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/FileLoading.gif)    
 ## Future
