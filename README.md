@@ -6,13 +6,18 @@
   - With a high number of panels in fullscreen, shader code quality can be profiled or benchmarked. 
   - Includes separate window console displaying the state of all uniforms and any OpenGL compilation errors.
 
+
+<img src="https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/LiveCompiling.gif">    
+<img src="https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/Layout.gif">    
+<img src="https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/FileLoading.gif">  
+
 ## Installation
   - Either download and run one of the pre-built binaries or clone and build with JUCE.
 ## Quick start
 1. Run the app.
 2. Copy the shaders from this repo's ShaderExamples folder into the app's CWD folder (which upon first launch gets generated in your Documents folder).
 3. Click "Refresh Folder"
-## How to use
+## Usage
 ##### Load files via folder  
   - Click the "Refresh folder" button to reload all panels using the shader files currently in the app's "CWD" folder.
 >Fragment file extension must be ".frag".   
@@ -25,11 +30,7 @@
 ##### Panel Layout
   - Choose a layout by clicking either "Tiled", "Rows", or "Columns". Tiled only accepts round square root integers; Rows and Columns accepts a minimum of 2 panels.
   - Enter the number of panels to display in the text field at the top left.
- 
-## Demos
-<img src="https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/LiveCompiling.gif">    
-<img src="https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/Layout.gif">    
-<img src="https://github.com/ianacaburian/LiveShaderPalette/blob/master/Demos/FileLoading.gif">    
+  
 ## Future
   - Add save, load, undo, redo.
   - Load texture resources.
