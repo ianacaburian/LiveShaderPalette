@@ -32,6 +32,7 @@ ToolBar::ToolBar(MainComponent& parent) : parent{ parent }
     }
     live_compile_btn.setClickingTogglesState(true);
     console_btn.setClickingTogglesState(true);
+    refresh_folder_btn.setColour(TextButton::textColourOffId, Colours::white);
     
     initialize_layout_buttons();
     set_component_callbacks();
