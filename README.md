@@ -36,6 +36,9 @@
   - Enter the number of panels to display in the text field at the top left.
   
 ## Future
+  - Build for Windows 10 (requires refactor?)
+    - Replace GL:: with OpenGLContext::extensions
+    - Remove explicit vertex array specification (unsupported by JUCE?)
   - Add save, load, undo, redo.
   - Load texture resources.
   - Support vertex shaders.
