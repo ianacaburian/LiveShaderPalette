@@ -14,18 +14,16 @@
 
 MainComponent::MainComponent()
 {
-    collect_fragment_files();
-    add_panels(0, tool_bar.get_num_panels());
     Desktop::getInstance().setDefaultLookAndFeel(&look);
-    addAndMakeVisible(tool_bar);
-
+    collect_fragment_files();
     period.setValue(1000);
+    add_panels(0, tool_bar.get_num_panels());
+    addAndMakeVisible(tool_bar);
     setSize(640, 480 * (1 + tool_bar_scalar));
     
-    openGLContext.setOpenGLVersionRequired(juce::OpenGLContext::openGL3_2);
+    openGLContext.setOpenGLVersionRequired(OpenGLContext::openGL3_2);
     openGLContext.setContinuousRepainting(true);
     openGLContext.setComponentPaintingEnabled(true);
-    //        openGLContext.setMultisamplingEnabled(true);                            // Eliminates flickering, no idea how or why.
     openGLContext.setRenderer(this);
     openGLContext.attachTo(*this);
 }
