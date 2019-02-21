@@ -30,6 +30,7 @@ void LiveShaderProgram::create()
     program->addVertexShader(OpenGLHelpers::translateVertexShaderToV3(default_vertex_source));
     
     const auto fragment_ID = gl.extensions.glCreateShader(GL_FRAGMENT_SHADER);
+  
     auto compile_shader = [&](const String& source) {
         const auto& versioned_source = (OpenGLShaderProgram::getLanguageVersion() > 1.2
                                         ? JUCE_GLSL_VERSION "\n"
@@ -38,9 +39,9 @@ void LiveShaderProgram::create()
         gl.extensions.glShaderSource(fragment_ID, 1, &source_ptr, nullptr);
         gl.extensions.glCompileShader(fragment_ID);
     };
+  
     compile_shader(fragment_shader_source);
 
-    DBG("fss: \n" << fragment_shader_source);
     GLint success = GL_FALSE;
     if (gl.extensions.glGetShaderiv(fragment_ID, GL_COMPILE_STATUS, &success);
         ! success || fragment_shader_source.isEmpty()) {
@@ -61,7 +62,6 @@ void LiveShaderProgram::create()
             }
         }();
         
-        DBG("fss error: \n" << error_msg);
         MessageManager::callAsync([error_msg = error_msg.length() ? error_msg : "ERROR",
                                    timestamp = Time::getCurrentTime().formatted("%H:%M:%S"),
                                    component_ID = panel.getComponentID(),
@@ -78,14 +78,15 @@ void LiveShaderProgram::create()
     
     program->link();
     program->use();
+  
     const auto layout = parent.get_layout();
-    program->setUniform("u_componentID_layout",
-                        panel.getComponentID().getIntValue(),
+    program->setUniform("u_componentID_layout", panel.getComponentID().getIntValue(),
                         layout.first, layout.second, 0);
 }
 void LiveShaderProgram::render()
 {
     program->use();
+  
     const auto shader_bounds = panel.getShaderBoundsToFloat();
     const auto panel_size = parent.get_panel_size();
     const auto panel_area_size = parent.get_panel_area_size();
