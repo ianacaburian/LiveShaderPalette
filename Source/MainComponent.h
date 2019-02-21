@@ -18,7 +18,7 @@ class Console;
     This component lives inside our window, and this is where you should put all
     your controls and content.
 */
-class MainComponent : public OpenGLTopLevelComponent, public FileDragAndDropTarget, public Timer
+class MainComponent : public OpenGLParentComponent, public FileDragAndDropTarget, public Timer
 {
 public:
     //==========================================================================
@@ -29,6 +29,7 @@ public:
     void newOpenGLContextCreatedParent() override;
     void checkContextCreation() override;
     void renderOpenGLParent() override;
+    void resetBuffers() override;
     bool isInterestedInFileDrag (const StringArray& files) override;
     void filesDropped(const StringArray& files, int x, int y) override;
     void timerCallback() override;
@@ -55,6 +56,7 @@ private:
     
     //==========================================================================
     
+    OpenGLContext openGLContext;
     std::vector<LiveShaderPanel*> panels;
     File shader_folder;
     std::vector<File> fragment_files;

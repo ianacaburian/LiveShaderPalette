@@ -21,6 +21,13 @@ MainComponent::MainComponent()
 
     period.setValue(1000);
     setSize(640, 480 * (1 + tool_bar_scalar));
+    
+    openGLContext.setOpenGLVersionRequired(juce::OpenGLContext::openGL3_2);
+    openGLContext.setContinuousRepainting(true);
+    openGLContext.setComponentPaintingEnabled(true);
+    //        openGLContext.setMultisamplingEnabled(true);                            // Eliminates flickering, no idea how or why.
+    openGLContext.setRenderer(this);
+    openGLContext.attachTo(*this);
 }
 MainComponent::~MainComponent()
 {
@@ -52,6 +59,12 @@ void MainComponent::renderOpenGLParent()
     saw_time = static_cast<float>(std::fmod(time, period_double) / period_double);
     tool_bar.log();
 }
+void MainComponent::resetBuffers()
+{
+    openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, 0);
+    openGLContext.extensions.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
 bool MainComponent::isInterestedInFileDrag(const StringArray& files) { return true; }
 void MainComponent::filesDropped(const StringArray& files, int x, int y)
 {

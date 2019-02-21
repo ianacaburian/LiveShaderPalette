@@ -17,7 +17,6 @@
 
 class OpenGLRectangle final
 {
-    using GL = juce::OpenGLExtensionFunctions;
 public:
     //==========================================================================
     
@@ -28,53 +27,50 @@ public:
     
     void create()
     {
-        constexpr auto positionsCount = 8;
-        const GLfloat positions[positionsCount] {
+        static constexpr auto positionsCount = 8;
+        static constexpr GLfloat positions[positionsCount] {
             -1.0f, -1.0f,
              1.0f, -1.0f,
              1.0f,  1.0f,
             -1.0f,  1.0f
         };
-        const GLuint elements[elementsCount] {
+        static constexpr GLuint elements[elementsCount] {
             0, 1, 2,
             0, 2, 3
         };
-        GL::glGenVertexArrays(1, &arrayID);
-        GL::glBindVertexArray(arrayID);
-        
-        GL::glGenBuffers(1, &bufferID);
-        GL::glBindBuffer(GL_ARRAY_BUFFER, bufferID);
-        GL::glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * positionsCount,
-                         positions, GL_STATIC_DRAW);
-        
-        const auto positionAttribID = 0, dimensions = 2;
-        GL::glEnableVertexAttribArray(positionAttribID);
-        GL::glVertexAttribPointer(positionAttribID, dimensions, GL_FLOAT, GL_FALSE,
-                                  sizeof(GLfloat) * dimensions, 0);
-        
-        GL::glGenBuffers(1, &elementsID);
-        GL::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementsID);
-        GL::glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * elementsCount,
-                         elements, GL_STATIC_DRAW);
+        auto* openGLContext = OpenGLContext::getCurrentContext();
+        openGLContext->extensions.glGenBuffers(1, &bufferID);
+        openGLContext->extensions.glBindBuffer(GL_ARRAY_BUFFER, bufferID);
+        openGLContext->extensions.glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * positionsCount,
+                                               positions, GL_STATIC_DRAW);
+        openGLContext->extensions.glGenBuffers(1, &elementsID);
+        openGLContext->extensions.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementsID);
+        openGLContext->extensions.glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * elementsCount,
+                                              elements, GL_STATIC_DRAW);
     }
     void render()
     {
-        GL::glBindVertexArray(arrayID);
-        GL::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementsID);
+        auto* openGLContext = OpenGLContext::getCurrentContext();
+        openGLContext->extensions.glBindBuffer(GL_ARRAY_BUFFER, bufferID);
+        openGLContext->extensions.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementsID);
+        openGLContext->extensions.glVertexAttribPointer (positionAttribID, dimensions, GL_FLOAT, GL_FALSE,
+                                                         sizeof(GLfloat) * dimensions, nullptr);
+        openGLContext->extensions.glEnableVertexAttribArray (positionAttribID);
         glDrawElements(GL_TRIANGLES, elementsCount, GL_UNSIGNED_INT, nullptr);
+        openGLContext->extensions.glDisableVertexAttribArray (positionAttribID);
     }
     void delete_vertex_objects()
     {
-        GL::glDeleteVertexArrays(1, &arrayID);
-        GL::glDeleteBuffers(1, &bufferID);
-        GL::glDeleteBuffers(1, &elementsID);
+        auto* openGLContext = OpenGLContext::getCurrentContext();
+        openGLContext->extensions.glDeleteBuffers (1, &bufferID);
+        openGLContext->extensions.glDeleteBuffers (1, &elementsID);
     }
     
 private:
     //==========================================================================
     
-    GLuint arrayID{}, bufferID{}, elementsID{};
-    static constexpr int elementsCount = 6;
+    GLuint bufferID{}, elementsID{};
+    static constexpr GLint elementsCount = 6, positionAttribID = 0, dimensions = 2;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenGLRectangle)
 };
@@ -290,6 +286,7 @@ public:
             child.renderOpenGL();
             glDisable(GL_SCISSOR_TEST);
         });
+        resetBuffers();
     }
     void openGLContextClosing() override final
     {
@@ -304,6 +301,7 @@ protected:
     virtual void checkContextCreation() {}
     virtual void renderOpenGLParent() {}
     virtual void openGLContextClosingParent() {}
+    virtual void resetBuffers() = 0;
     virtual void clipDrawArea(OpenGLRendererComponent& child, const Point<int>& positionToTopLevel,
                               const double renderingScale, const int topLevelHeight)
     {
@@ -340,29 +338,4 @@ private:
     std::vector<std::unique_ptr<OpenGLRendererComponent>> children;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenGLParentComponent)
-};
-
-//==============================================================================
-
-class OpenGLTopLevelComponent : public OpenGLParentComponent
-{
-public:
-    //==========================================================================
-    
-    explicit OpenGLTopLevelComponent()
-    {
-        openGLContext.setOpenGLVersionRequired(juce::OpenGLContext::openGL3_2);
-        openGLContext.setContinuousRepainting(true);
-        openGLContext.setComponentPaintingEnabled(true);
-        openGLContext.setMultisamplingEnabled(true);                            // Eliminates flickering, no idea how or why.
-        openGLContext.setRenderer(this);
-        openGLContext.attachTo(*this);        
-    }
-    
-protected:
-    //==========================================================================
-
-    OpenGLContext openGLContext;
-    
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenGLTopLevelComponent)
 };
