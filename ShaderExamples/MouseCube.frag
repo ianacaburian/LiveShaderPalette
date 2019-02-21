@@ -14,15 +14,20 @@ out vec4 out_color;
 
 void main()
 {
-    // Radius follows the y position of the mouse.
-    // Arrange 20 or more of these shaders in columns while mouse hovering for the best effect.
-    
-    float distance_factor = u_periodic_time.x;
-    vec2 p = gl_PointCoord.xy / vec2(distance_factor, distance_factor * 0.5);
-    float thickness = .01;
-    float radius_factor = u_event_position.y / u_resolution.y;
-    float intensity = thickness/abs(radius_factor - length(p));
-    out_color = vec4(intensity * 0.8, intensity * 0.1, intensity, .5);
+    // Basic demo of the interaction between OpenGL coordinate based variables:
+    // - gl_FragCoord
+    // - u_bounds
+    // ... and JUCE coordinate based variables:
+    // - u_resolution
+    // - u_event_position
 
+    vec2 st = (gl_FragCoord.xy - u_bounds.xy) / u_bounds.zw;
+    float intensity = 0.;
+    float size = 0.02;
+    if (u_event_position.x / u_resolution.x - size < st.x && st.x < u_event_position.x / u_resolution.x + size
+        && (u_resolution.y - u_event_position.y) / u_resolution.y - size < st.y && st.y < (u_resolution.y - u_event_position.y) / u_resolution.y + size) {
+        intensity = 1.;
+    }
+    out_color = vec4(intensity, intensity, 0., 1.);
 }
 

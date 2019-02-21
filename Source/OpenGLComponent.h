@@ -171,6 +171,7 @@ public:
             auto strf1 = [](const float f) { return String::formatted("% .2f", f); };
             auto s = String{ "m " };
             s <<   "      componentID: " << child.getComponentID()
+              << "\n           bounds: " << child.getShaderBoundsToFloat().toNearestInt().toString()
               << "\n    mousePosition:"  << strf8(eventPosition.x) << " "
                                          << strf8(eventPosition.y)
               << "\n  mouseUpPosition:"  << strf8(mouseUpPosition.x) << " "

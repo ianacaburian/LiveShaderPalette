@@ -76,17 +76,18 @@ void ToolBar::InfoDisplay::log()
         ms_frame = 1000. / frame_count;
         frame_count = 0;
         prev_time = current_time;
-        const auto rendering_scale = OpenGLContext::getCurrentContext()->getRenderingScale();
-        MessageManager::callAsync([this, rendering_scale]
+        MessageManager::callAsync([this, console_is_open = parent.is_console_open(),
+                                   panel_size = parent.get_panel_size(),
+                                   panel_area_size = parent.get_panel_area_size(),
+                                   rendering_scale = OpenGLContext::getCurrentContext()->getRenderingScale()]
         {
             repaint();
-            if (parent.is_console_open()) {
+            if (console_is_open) {
                 auto strf1 = [](const float f) { return String::formatted("% .2f", f); };
                 auto strd = [](const int d) { return String{ d }.paddedLeft(' ', 4); };
-                const auto panel_size = parent.get_panel_size();
-                const auto panel_area_size = parent.get_panel_area_size();
                 auto s = String{ "p " };
                 s << "openGLContext.getRenderingScale(): " << strf1(rendering_scale)
+                  << "\n  Bounds:  " << strd(panel_size.x) << " " << strd(panel_size.y)
                   << "\n   Panel:  " << strd(panel_size.x) << " " << strd(panel_size.y)
                   << "\n  Screen:  " << strd(panel_area_size.x) << " " << strd(panel_area_size.y)
                   << "\nSin time: " << strf1(parent.get_sin_time())
