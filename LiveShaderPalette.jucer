@@ -4,24 +4,24 @@
               cppLanguageStandard="17" defines="GL_SILENCE_DEPRECATION=1">
   <MAINGROUP id="Lpz2TT" name="LiveShaderPalette">
     <GROUP id="{39443426-EA8F-5615-5DF5-4B1B7C4B267B}" name="Source">
-      <FILE id="M6ml3y" name="Console.cpp" compile="1" resource="0" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/Console.cpp"/>
-      <FILE id="oN43b1" name="Console.h" compile="0" resource="0" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/Console.h"/>
-      <FILE id="ZDnLCt" name="LiveShaderPanel.cpp" compile="1" resource="0"
-            file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/LiveShaderPanel.cpp"/>
-      <FILE id="BCxAuK" name="LiveShaderPanel.h" compile="0" resource="0"
-            file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/LiveShaderPanel.h"/>
-      <FILE id="DIq1G4" name="LiveShaderProgram.cpp" compile="1" resource="0"
-            file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/LiveShaderProgram.cpp"/>
-      <FILE id="kjFTXX" name="LiveShaderProgram.h" compile="0" resource="0"
-            file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/LiveShaderProgram.h"/>
-      <FILE id="WLkhaF" name="Main.cpp" compile="1" resource="0" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/Main.cpp"/>
-      <FILE id="aQXdxd" name="MainComponent.cpp" compile="1" resource="0"
-            file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/MainComponent.cpp"/>
-      <FILE id="wRg5jV" name="MainComponent.h" compile="0" resource="0" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/MainComponent.h"/>
-      <FILE id="waYvZY" name="OpenGLComponent.h" compile="0" resource="0"
-            file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/OpenGLComponent.h"/>
-      <FILE id="I1IgJe" name="ToolBar.cpp" compile="1" resource="0" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/ToolBar.cpp"/>
-      <FILE id="hGJsfy" name="ToolBar.h" compile="0" resource="0" file="/Users/cc/Dev/OpenGL Examples/LiveShaderPalette/Source/ToolBar.h"/>
+      <FILE id="UoTSi9" name="Console.cpp" compile="1" resource="0" file="Source/Console.cpp"/>
+      <FILE id="Soe872" name="Console.h" compile="0" resource="0" file="Source/Console.h"/>
+      <FILE id="CC81Kc" name="LiveShaderPanel.cpp" compile="1" resource="0"
+            file="Source/LiveShaderPanel.cpp"/>
+      <FILE id="vz1pgv" name="LiveShaderPanel.h" compile="0" resource="0"
+            file="Source/LiveShaderPanel.h"/>
+      <FILE id="H7Mh9F" name="LiveShaderProgram.cpp" compile="1" resource="0"
+            file="Source/LiveShaderProgram.cpp"/>
+      <FILE id="TFm3Eo" name="LiveShaderProgram.h" compile="0" resource="0"
+            file="Source/LiveShaderProgram.h"/>
+      <FILE id="R7RyKM" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+      <FILE id="x4CUl4" name="MainComponent.cpp" compile="1" resource="0"
+            file="Source/MainComponent.cpp"/>
+      <FILE id="aiU9fY" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
+      <FILE id="FTj6ev" name="OpenGLComponent.h" compile="0" resource="0"
+            file="Source/OpenGLComponent.h"/>
+      <FILE id="vffJpN" name="ToolBar.cpp" compile="1" resource="0" file="Source/ToolBar.cpp"/>
+      <FILE id="jl6GgG" name="ToolBar.h" compile="0" resource="0" file="Source/ToolBar.h"/>
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>

@@ -28,59 +28,36 @@ public:
     //==========================================================================
 
     void create();
-    void use();
     void render();
     void delete_program();
 
 private:
     //==========================================================================
 
-    struct LiveShader
-    {
-        GLuint shader_ID;
-        LiveShaderProgram& program;
-        
-        LiveShader(LiveShaderProgram& program, const GLenum type, const GLchar* source,
-                   const GLint source_length, const GLuint shader_prog_ID);
-        ~LiveShader();
-        void create_shader(const GLenum type, const GLchar* source, const GLint source_length, const String& error = {});
-    };
-    
-    //==========================================================================
-
     struct Uniforms
     {
-        GLint
-        uf_componentID_layout,
-        uf_resolution,
-        uf_rendering_scale,
-        uf_event_position,
-        uf_mouse_position,
-        uf_mouse_time,
-        uf_periodic_time,
-        uf_flags,
-        uf_mouse_options;
-        
         LiveShaderProgram& program;
         
         Uniforms(LiveShaderProgram& program);
-        void create();
-        void send_uniforms();
-        GLint get_uniform_location(const char* uniform_id) const;
     };
     
     //==========================================================================
 
-    Uniforms uniforms{ *this };
+    std::unique_ptr<OpenGLShaderProgram> program;
+    
+    static constexpr const char* const default_vertex_source =
+        "in vec4 position;\nvoid main()\n{\ngl_Position=position;\n}\n";
+    static constexpr const char* const default_fragment_source =
+        "out vec4 out_color;\nvoid main()\n{\n"
+                     "float result=0.;\nif(-1.<=gl_PointCoord.y&&gl_PointCoord.y<-0.95\n"
+                     "||0.95<=gl_PointCoord.y&&gl_PointCoord.y<1.\n"
+                     "||-1.<=gl_PointCoord.x&&gl_PointCoord.x<-0.95\n"
+                     "||0.95<=gl_PointCoord.x&&gl_PointCoord.x<1.){\n"
+                     "result=1.;\n}\nout_color=vec4(result,result,result,1.);\n}\n";
+    
     String fragment_shader_source{};
-    GLuint shader_prog_ID{};
     MainComponent& parent;
     LiveShaderPanel& panel;
-    
-    //==========================================================================
 
-    Point<int> get_screen_size() const;
-    static Result verify_operation_sucess(GLuint object_id, const GLenum type);
-    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LiveShaderProgram)
 };

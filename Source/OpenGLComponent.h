@@ -111,7 +111,19 @@ template<class... Ts> Overloader(Ts...) -> Overloader<Ts...>;
 
 //==============================================================================
 
-class OpenGLRendererComponent : public OpenGLRenderer, public Component {};
+class OpenGLRendererComponent : public OpenGLRenderer, public Component
+{
+public:
+    //==========================================================================
+    
+    Rectangle<float> getShaderBoundsToFloat() const { return shaderBounds.toFloat(); }
+    void setShaderBounds(const int x, const int y, const int w, const int h) { shaderBounds = { x, y, w, h}; }
+    
+private:
+    //==========================================================================
+    
+    Rectangle<int> shaderBounds;
+};
 
 //==============================================================================
 
@@ -266,11 +278,16 @@ public:
     }
     void renderOpenGL() override final
     {
-        glEnable(GL_SCISSOR_TEST);
+        const auto renderingScale = OpenGLContext::getCurrentContext()->getRenderingScale();
         renderOpenGLParent();
-        visitChildren([this](auto& child) {
-            clipDrawArea(child.getBounds());
+        auto* topLevelComponent = getTopLevelComponent();
+        const auto positionToTopLevel = getLocalPoint(topLevelComponent, Point<int>{});
+        const auto topLevelHeight = topLevelComponent->getHeight();
+        visitChildren([&](auto& child) {
+            glEnable(GL_SCISSOR_TEST);
+            clipDrawArea(child, positionToTopLevel, renderingScale, topLevelHeight);
             child.renderOpenGL();
+            glDisable(GL_SCISSOR_TEST);
         });
     }
     void openGLContextClosing() override final
@@ -286,16 +303,14 @@ protected:
     virtual void checkContextCreation() {}
     virtual void renderOpenGLParent() {}
     virtual void openGLContextClosingParent() {}
-    virtual float getRenderingScale() const = 0;
-    virtual void clipDrawArea(const Rectangle<int>& child)
+    virtual void clipDrawArea(OpenGLRendererComponent& child, const Point<int>& positionToTopLevel,
+                              const double renderingScale, const int topLevelHeight)
     {
-        const auto renderingScale = getRenderingScale();
-        auto* appWindow = getTopLevelComponent();
-        const auto appPosition = getLocalPoint(appWindow, Point<int>{ getX(), getY() });
-        const auto x = (appPosition.x + child.getX()) * renderingScale;
-        const auto y = (appWindow->getHeight() - (appPosition.y + child.getBottom())) * renderingScale;
-        const auto w = child.getWidth() * renderingScale;
-        const auto h = child.getHeight() * renderingScale;
+        const auto x = roundToInt((std::abs(positionToTopLevel.x) + child.getX()) * renderingScale);
+        const auto y = roundToInt((topLevelHeight - (std::abs(positionToTopLevel.y) + child.getBottom())) * renderingScale);
+        const auto w = roundToInt(child.getWidth() * renderingScale);
+        const auto h = roundToInt(child.getHeight() * renderingScale);
+        child.setShaderBounds(x, y, w, h);
         glViewport(x, y, w, h);
         glScissor(x, y, w, h);
     }
@@ -311,6 +326,7 @@ protected:
         if (const auto result = std::find_if(children.begin(), children.end(),
                                              [&](const auto& c) { return c.get() == child; });
             result != children.end()) {
+            removeChildComponent(child);
             children.erase(result);
         }
     }
@@ -341,7 +357,6 @@ public:
         openGLContext.setRenderer(this);
         openGLContext.attachTo(*this);        
     }
-    float getRenderingScale() const override { return openGLContext.getRenderingScale(); }
     
 protected:
     //==========================================================================
