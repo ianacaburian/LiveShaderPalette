@@ -301,7 +301,7 @@ protected:
     virtual void checkContextCreation() {}
     virtual void renderOpenGLParent() {}
     virtual void openGLContextClosingParent() {}
-    virtual void resetBuffers() = 0;
+    virtual void resetBuffers() {}
     virtual void clipDrawArea(OpenGLRendererComponent& child, const Point<int>& positionToTopLevel,
                               const double renderingScale, const int topLevelHeight)
     {
@@ -318,12 +318,11 @@ protected:
 
     void addOpenGLRendererComponent(OpenGLRendererComponent* child)
     {
-        addAndMakeVisible(*children.emplace_back(std::unique_ptr<OpenGLRendererComponent>{ child }));
+        addAndMakeVisible(*children.emplace_back(child));
     }
     void removeOpenGLRendererComponent(OpenGLRendererComponent* child)
     {
-        if (const auto result = std::find_if(children.begin(), children.end(),
-                                             [&](const auto& c) { return c.get() == child; });
+        if (const auto result = std::find(children.begin(), children.end(), child);
             result != children.end()) {
             removeChildComponent(child);
             children.erase(result);
@@ -335,7 +334,7 @@ protected:
 private:
     //==========================================================================
     
-    std::vector<std::unique_ptr<OpenGLRendererComponent>> children;
+    std::vector<OpenGLRendererComponent*> children;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenGLParentComponent)
 };

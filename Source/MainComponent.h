@@ -57,7 +57,7 @@ private:
     //==========================================================================
     
     OpenGLContext openGLContext;
-    std::vector<LiveShaderPanel*> panels;
+    std::vector<std::unique_ptr<LiveShaderPanel>> panels;
     File shader_folder;
     std::vector<File> fragment_files;
     ToolBar tool_bar{ *this };

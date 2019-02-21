@@ -9,7 +9,7 @@
 #include "MainComponent.h"
 #include "LiveShaderPanel.h"
 #include "Console.h"
-
+#include "LiveShaderProgram.h"
 //==============================================================================
 
 MainComponent::MainComponent()
@@ -140,7 +140,8 @@ void MainComponent::update_layout()
         else {
             const auto new_num_panels = initial_num_panels + delta_panels;
             for (int i = initial_num_panels; --i >= new_num_panels;) {
-                removeOpenGLRendererComponent(*panels.erase(panels.begin() + i));
+                removeOpenGLRendererComponent(panels[i].get());
+                panels.erase(panels.begin() + i);
             }
         }
         resized();
@@ -170,7 +171,7 @@ MainComponent::Look::Look()
     setColour(TextButton::      textColourOffId,    Colours::grey);
     setColour(TextEditor::      backgroundColourId, Colours::black);
     setColour(TextEditor::      outlineColourId,    Colours::grey);
-    setColour(Label::textColourId, Colours::white);
+    setColour(Label::           textColourId,       Colours::white);
 }
 
 // MainComponent::private: =====================================================
@@ -179,11 +180,10 @@ void MainComponent::add_panels(const int initial_num_panels, const int num_panel
 {
     const auto num_fragments = static_cast<int>(fragment_files.size());
     for (int i = initial_num_panels; i != initial_num_panels + num_panels_to_add; ++i) {
-        auto* new_panel = panels.emplace_back(new LiveShaderPanel{ *this, i });
+        addOpenGLRendererComponent(panels.emplace_back(std::make_unique<LiveShaderPanel>(*this, i)).get());
         if (num_fragments) {
-            new_panel->load_shader_file(fragment_files[i % num_fragments]);
+            panels[i]->load_shader_file(fragment_files[i % num_fragments]);
         }
-        addOpenGLRendererComponent(new_panel);
     }
 }
 void MainComponent::visit_panels(std::function<void(LiveShaderPanel&)> f) { for (auto& p : panels) f(*p); }
