@@ -108,7 +108,7 @@ void LiveShaderProgram::render()
                                                 mouse_state.mouseDownTime, 0);
     program->setUniform("u_periodic_time",      parent.get_sin_time(),
                                                 parent.get_saw_time());
-    program->setUniform("u_flags",              static_cast<int>(mouse_state.lastEventType.index()),
+    program->setUniform("u_flags",              static_cast<GLint>(mouse_state.lastEventType.index()),
                                                 mouse_state.isDown,
                                                 mouse_state.isToggled,
                                                 mouse_state.isRightClick);
