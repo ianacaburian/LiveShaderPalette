@@ -49,9 +49,10 @@
   - OpenGL coordinates: origin at bottom-left, y-axis ascends upwards.
   - Mouse events and `u_resolution` are in JUCE coordinates.
   - `u_bounds` is scaled to OpenGL coordinates.
-  - Tip: Load the MouseCube.frag in the ShaderExamples folder for the simplest demo on how to work with both coordinate systems.
-  - Tip: When using multiple panels, the shader thread `st = (gl_FragCoord.xy - u_bounds.xy) / u_bounds.zw;`.
-  - Tip: Normalizing JUCE position uniforms such as `u_event_position` should involve `u_resolution`, e.g. `position = u_event_position.xy / u_resolution.xy` as opposed to `u_event_position.xy / u_bounds.zw`.
+###### Tips
+> Load the MouseCube.frag in the ShaderExamples folder for the simplest demo on how to work with both coordinate systems.
+> When using multiple panels, the shader thread `st = (gl_FragCoord.xy - u_bounds.xy) / u_bounds.zw;`.
+> Normalizing JUCE position uniforms such as `u_event_position` should involve `u_resolution`, e.g. `position = u_event_position.xy / u_resolution.xy` as opposed to `u_event_position.xy / u_bounds.zw`.
   
 ##### Console
   - The lower area displays the OpenGL shader compiler errors.
