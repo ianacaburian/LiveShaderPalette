@@ -44,16 +44,21 @@
   - Support vertex shaders.
 > Feature suggestions and pull requests welcome!
 ## Reference
-##### Note on gl_ var usage
-  - OpenGL coordinates are vertically inverted in relation to JUCE's coordinate system. 
-  - gl_PointCoord may be much more useful than gl_FragCoord because its range is relative to a single panel, whereas gl_FragCoord takes the entire app window into account. 
-  - gl_PointCoord uses normalized coordinates in the range [-1, 1] with origin in the center (of a single panel), whereas gl_FragCoord uses pixel resolution with origin at bottom left (of the app window). 
-  - Keep these points in mind if shader tutorials use gl_FragCoord as you will need to transform accordingly (which is what I needed to do in the Knob.frag shader example).
+##### Differences between OpenGL and JUCE coordinate systems.
+  - JUCE coordinates: origin at top-left, y-axis ascends downwards.
+  - OpenGL coordinates: origin at bottom-left, y-axis ascends upwards.
+  - Mouse events and `u_resolution` are in JUCE coordinates.
+  - `u_bounds` is scaled to OpenGL coordinates.
+###### Tips
+> - Load the MouseCube.frag in the ShaderExamples folder for the simplest demo on how to work with both coordinate systems.
+> - When using multiple panels, the shader thread `st = (gl_FragCoord.xy - u_bounds.xy) / u_bounds.zw;`.
+> - Normalizing JUCE position uniforms such as `u_event_position` should involve `u_resolution`, e.g. `position = u_event_position.xy / u_resolution.xy` as opposed to `u_event_position.xy / u_bounds.zw`.
+  
 ##### Console
   - The lower area displays the OpenGL shader compiler errors.
   - Live compile rate: The rate that the app will recompile the current files.
   - Period: The rate that the sin and saw time functions use for animation speed.
-  - Rendering scale: All uniform coordinates (screen/panel size and mouse positions) are provided in JUCE screen coordinates (i.e. in pixel resolution with the origin at top left); multiply these by the rendering scale if OpenGL coordinates are required.
+  - Rendering scale: given by OpenGLContext::getRenderingScale(). Can be used to convert between JUCE coordinates and OpenGL coordinates.
   - Component ID: The ID of the panel that's associated with the current mouse event.
   - Mouse positions: Event position is the current position whereas mouse up/down position is the position since the mouse was last pressed up or down; useful for traditional click and drag component simulation.
   - Toggle flag: Simulates a toggle button; useful for designing toggleable button components.
@@ -61,43 +66,49 @@
   - Magnify scale factor: The zoom scale that results from pinching touch gestures.
 ##### Uniforms
 
-- `ivec4 uf_componentID_layout`    
+- `ivec4 u_componentID_layout`    
     x = Component ID    
     y = Layout type { 0 = Tiled, 1 = Rows, 2 = Columns }    
     z = Number of panels    
     w = (empty)    
+  
+- `ivec4 u_bounds`    
+    x = Panel x-position    
+    y = Panel y-position  
+    z = Panel width    
+    w = Panel height    
     
-- `ivec4 uf_resolution`    
+- `ivec4 u_resolution`    
     x = Panel width    
     y = Panel height    
     z = Panels area width    
     w = Panels area height    
   
-- `float uf_rendering_scale`    
+- `float u_rendering_scale`    
     openGLContext::getRenderingScale() (see JUCE docs)      
-- `vec2 uf_event_position`    
+- `vec2 u_event_position`    
     x = Event x-position    
     y = Event y-position    
-- `vec4 uf_mouse_position`    
+- `vec4 u_mouse_position`    
     x = Mouse up x-position    
     y = Mouse up y-position  
     z = Mouse down x-position    
     w = Mouse down y-position  
-- `ivec4 uf_mouse_time`    
+- `ivec4 u_mouse_time`    
     x = Mouse event time    
     y = Mouse up time    
     z = Mouse down time    
     w = (empty)    
-- `vec2 uf_periodic_time`    
+- `vec2 u_periodic_time`    
     x = Sin time    
     y = Saw time    
-- `ivec4 uf_flags`    
+- `ivec4 u_flags`    
     x = Mouse type    
         { 0 = Move, 1 = Enter, 2 = Exit, 3 = Down, 4 = Drag, 5 = Up, 6 = Double Click, 7 = Wheel Move, 8 = Magnify }    
     y = Mouse button is down    
     z = Button toggle flag    
     w = Right mouse button    
-- `vec3 uf_mouse_options`    
+- `vec3 u_mouse_options`    
     x = Mouse wheel delta-x    
     y = Mouse wheel delta-y    
     z = Mouse magnify scale factor    
