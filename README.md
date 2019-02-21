@@ -72,7 +72,7 @@
     z = Number of panels    
     w = (empty)    
   
-- `ivec4 u_bounds`    
+- `vec4 u_bounds`    
     x = Panel x-position    
     y = Panel y-position  
     z = Panel width    
