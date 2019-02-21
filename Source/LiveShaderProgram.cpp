@@ -81,7 +81,7 @@ void LiveShaderProgram::create()
   
     const auto layout = parent.get_layout();
     program->setUniform("u_componentID_layout", panel.getComponentID().getIntValue(),
-                        layout.first, layout.second, 0);
+                                                layout.first, layout.second, 0);
 }
 void LiveShaderProgram::render()
 {
