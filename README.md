@@ -36,12 +36,11 @@
   - Enter the number of panels to display in the text field at the top left.
   
 ## Future
-  - Build for Windows 10 (requires refactor?)
-    - Replace GL:: with OpenGLContext::extensions
-    - Remove explicit vertex array specification (unsupported by JUCE?)
+  - Improve recompilation mechanism (add option to recompile on diff detected?)
+  - Build for Windows
   - Add save, load, undo, redo.
   - Load texture resources.
-  - Support vertex shaders.
+  - Support vertex/geo shaders.
 > Feature suggestions and pull requests welcome!
 ## Reference
 ##### Differences between OpenGL and JUCE coordinate systems.
